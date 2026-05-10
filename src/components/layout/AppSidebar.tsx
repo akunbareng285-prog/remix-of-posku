@@ -8,6 +8,8 @@ import {
   LogOut,
   Tag,
   Users,
+  Receipt,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -15,6 +17,8 @@ import { cn } from "@/lib/utils";
 const items = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/pos", label: "Kasir", icon: ShoppingCart, highlight: true },
+  { to: "/transactions", label: "Transaksi", icon: Receipt },
+  { to: "/reports", label: "Laporan", icon: BarChart3 },
   { to: "/products", label: "Produk", icon: Package },
   { to: "/categories", label: "Kategori", icon: Tag },
   { to: "/stock", label: "Stok", icon: Warehouse },
