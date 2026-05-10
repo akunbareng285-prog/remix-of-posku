@@ -7,6 +7,7 @@ import {
   MapPin,
   LogOut,
   Tag,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -18,11 +19,12 @@ const items = [
   { to: "/categories", label: "Kategori", icon: Tag },
   { to: "/stock", label: "Stok", icon: Warehouse },
   { to: "/locations", label: "Lokasi", icon: MapPin },
+  { to: "/users", label: "Pengguna", icon: Users, adminOnly: true },
 ];
 
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { user, signOut } = useAuth();
+  const { user, signOut, hasRole } = useAuth();
 
   return (
     <aside className="w-60 bg-sidebar text-sidebar-foreground flex-shrink-0 hidden md:flex flex-col">
