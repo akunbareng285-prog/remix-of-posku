@@ -99,32 +99,32 @@ function ProductsPage() {
           </DialogContent>
         </Dialog>
       } />
-      <div className="p-6 space-y-4">
+      <div className="p-6 space-y-5">
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Cari nama atau SKU..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" />
+          <Input placeholder="Cari nama atau SKU..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 font-bold" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {(products ?? []).map((p: any) => (
-            <Card key={p.id} className="p-4">
+            <Card key={p.id} className="p-4 nb-press">
               <div className="flex items-start gap-3">
-                <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                  <Package className="h-5 w-5 text-muted-foreground" />
+                <div className="h-14 w-14 nb-border bg-accent flex items-center justify-center flex-shrink-0">
+                  <Package className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-muted-foreground">{p.sku}</div>
-                  <div className="font-semibold truncate">{p.name}</div>
-                  <div className="text-xs text-muted-foreground">{p.categories?.name ?? "-"} • per {p.unit}</div>
-                  <div className="text-primary font-bold mt-1">{formatRupiah(p.selling_price)}</div>
+                  <div className="text-xs font-mono uppercase text-foreground/60">{p.sku}</div>
+                  <div className="font-bold truncate">{p.name}</div>
+                  <div className="text-xs uppercase tracking-wider text-foreground/60 mt-0.5">{p.categories?.name ?? "—"} • per {p.unit}</div>
+                  <div className="font-display text-lg text-primary mt-1">{formatRupiah(p.selling_price)}</div>
                 </div>
               </div>
-              <div className="flex justify-end gap-1 mt-3">
-                <Button size="sm" variant="ghost" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
-                <Button size="sm" variant="ghost" className="text-destructive hover:bg-destructive/10" onClick={() => del.mutate(p.id)}><Trash2 className="h-4 w-4" /></Button>
+              <div className="flex justify-end gap-2 mt-4 pt-3 border-t-2 border-foreground">
+                <Button size="sm" variant="outline" onClick={() => openEdit(p)}><Pencil className="h-4 w-4 mr-1" /> Edit</Button>
+                <Button size="sm" variant="destructive" onClick={() => del.mutate(p.id)}><Trash2 className="h-4 w-4" /></Button>
               </div>
             </Card>
           ))}
-          {(products ?? []).length === 0 && <p className="col-span-full text-center text-muted-foreground py-12">Belum ada produk.</p>}
+          {(products ?? []).length === 0 && <p className="col-span-full text-center font-bold uppercase tracking-wider py-12 text-foreground/60">Belum ada produk.</p>}
         </div>
       </div>
     </div>
