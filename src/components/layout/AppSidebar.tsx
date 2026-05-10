@@ -27,20 +27,20 @@ export function AppSidebar() {
   const { user, signOut, hasRole } = useAuth();
 
   return (
-    <aside className="w-60 bg-sidebar text-sidebar-foreground flex-shrink-0 hidden md:flex flex-col">
-      <div className="px-5 py-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-lg bg-[var(--gradient-primary)] flex items-center justify-center font-bold">
+    <aside className="w-64 bg-sidebar text-sidebar-foreground flex-shrink-0 hidden md:flex flex-col border-r-2 border-foreground">
+      <div className="px-5 py-6 border-b-2 border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-md bg-accent text-accent-foreground border-2 border-sidebar-border flex items-center justify-center font-display text-xl shadow-[3px_3px_0_0_var(--sidebar-border)]">
             T
           </div>
           <div>
-            <div className="font-bold leading-tight">Toko POS</div>
-            <div className="text-xs opacity-70">Multi-lokasi</div>
+            <div className="font-display uppercase text-lg leading-none">Toko POS</div>
+            <div className="text-xs opacity-70 mt-1 font-medium">Multi-lokasi</div>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
         {items.filter(i => !i.adminOnly || hasRole("admin")).map(({ to, label, icon: Icon, highlight }) => {
           const active = path === to || (to !== "/dashboard" && path.startsWith(to));
           return (
@@ -48,11 +48,11 @@ export function AppSidebar() {
               key={to}
               to={to}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-bold uppercase tracking-wide transition-all border-2",
                 active
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                  : "hover:bg-sidebar-accent text-sidebar-foreground/85",
-                highlight && !active && "ring-1 ring-sidebar-primary/40"
+                  ? "bg-accent text-accent-foreground border-sidebar-border shadow-[3px_3px_0_0_var(--sidebar-border)] -translate-x-[1px] -translate-y-[1px]"
+                  : "border-transparent hover:bg-sidebar-accent text-sidebar-foreground/90 hover:border-sidebar-border",
+                highlight && !active && "border-sidebar-border/60"
               )}
             >
               <Icon className="h-4 w-4" />
@@ -62,11 +62,11 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-sidebar-border">
-        <div className="px-3 py-2 text-xs opacity-70 truncate">{user?.email}</div>
+      <div className="px-3 py-4 border-t-2 border-sidebar-border">
+        <div className="px-3 py-2 text-xs opacity-70 truncate font-medium">{user?.email}</div>
         <button
           onClick={signOut}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-sidebar-accent transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-bold uppercase tracking-wide border-2 border-transparent hover:bg-sidebar-accent hover:border-sidebar-border transition-all"
         >
           <LogOut className="h-4 w-4" /> Keluar
         </button>
