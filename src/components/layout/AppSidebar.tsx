@@ -41,7 +41,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {items.map(({ to, label, icon: Icon, highlight }) => {
+        {items.filter(i => !i.adminOnly || hasRole("admin")).map(({ to, label, icon: Icon, highlight }) => {
           const active = path === to || (to !== "/dashboard" && path.startsWith(to));
           return (
             <Link
