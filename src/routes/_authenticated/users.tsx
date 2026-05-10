@@ -1,9 +1,20 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -13,9 +24,10 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useAuth } from "@/hooks/use-auth";
-import { Shield, X, UserCircle2 } from "lucide-react";
+import { Shield, X, UserCircle2, Mail, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { inviteUser } from "@/lib/users.functions";
 
 type Role = "admin" | "cashier" | "warehouse_manager" | "owner";
 const ALL_ROLES: Role[] = ["admin", "owner", "warehouse_manager", "cashier"];
@@ -107,13 +119,121 @@ function UsersPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const inviteFn = useServerFn(inviteUser);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteRole, setInviteRole] = useState<Role>("cashier");
+
+  const invite = useMutation({
+    mutationFn: async () =>
+      inviteFn({
+        data: {
+          email: inviteEmail.trim(),
+          role: inviteRole,
+          fullName: inviteName.trim() || undefined,
+        },
+      }),
+    onSuccess: () => {
+      toast.success(`Undangan dikirim ke ${inviteEmail}`);
+      setInviteOpen(false);
+      setInviteEmail("");
+      setInviteName("");
+      setInviteRole("cashier");
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Gagal mengundang"),
+  });
+
   return (
     <div>
       <PageHeader
         title="Manajemen Pengguna"
         subtitle="Kelola pengguna dan tetapkan peran"
       />
-      <div className="p-6 max-w-4xl space-y-3">
+      <div className="p-6 max-w-4xl space-y-4">
+        <div className="flex justify-end">
+          <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="h-4 w-4 mr-1" /> Undang Pengguna
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Undang Pengguna Baru</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!inviteEmail.trim()) return;
+                  invite.mutate();
+                }}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="inv-email">Email</Label>
+                  <div className="relative">
+                    <Mail className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="inv-email"
+                      type="email"
+                      required
+                      placeholder="kasir@toko.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inv-name">Nama (opsional)</Label>
+                  <Input
+                    id="inv-name"
+                    placeholder="Nama lengkap"
+                    value={inviteName}
+                    onChange={(e) => setInviteName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Role awal</Label>
+                  <Select
+                    value={inviteRole}
+                    onValueChange={(v) => setInviteRole(v as Role)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ALL_ROLES.map((r) => (
+                        <SelectItem key={r} value={r}>
+                          {roleLabel[r]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Pengguna akan menerima email undangan untuk mengatur kata
+                    sandi.
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setInviteOpen(false)}
+                  >
+                    Batal
+                  </Button>
+                  <Button type="submit" disabled={invite.isPending}>
+                    {invite.isPending ? "Mengirim..." : "Kirim Undangan"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
         {isLoading && (
           <Card className="p-6 text-sm text-muted-foreground">Memuat...</Card>
         )}
