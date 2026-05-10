@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedStockRouteImport } from './routes/_authenticated/stock'
 import { Route as AuthenticatedProductsRouteImport } from './routes/_authenticated/products'
+import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedLocationsRouteImport } from './routes/_authenticated/locations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
@@ -42,6 +43,11 @@ const AuthenticatedProductsRoute = AuthenticatedProductsRouteImport.update({
   path: '/products',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPosRoute = AuthenticatedPosRouteImport.update({
+  id: '/pos',
+  path: '/pos',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedLocationsRoute = AuthenticatedLocationsRouteImport.update({
   id: '/locations',
   path: '/locations',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/categories': typeof AuthenticatedCategoriesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/locations': typeof AuthenticatedLocationsRoute
+  '/pos': typeof AuthenticatedPosRoute
   '/products': typeof AuthenticatedProductsRoute
   '/stock': typeof AuthenticatedStockRoute
 }
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/categories': typeof AuthenticatedCategoriesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/locations': typeof AuthenticatedLocationsRoute
+  '/pos': typeof AuthenticatedPosRoute
   '/products': typeof AuthenticatedProductsRoute
   '/stock': typeof AuthenticatedStockRoute
 }
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/_authenticated/categories': typeof AuthenticatedCategoriesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/locations': typeof AuthenticatedLocationsRoute
+  '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/products': typeof AuthenticatedProductsRoute
   '/_authenticated/stock': typeof AuthenticatedStockRoute
 }
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/locations'
+    | '/pos'
     | '/products'
     | '/stock'
   fileRoutesByTo: FileRoutesByTo
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/locations'
+    | '/pos'
     | '/products'
     | '/stock'
   id:
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/_authenticated/categories'
     | '/_authenticated/dashboard'
     | '/_authenticated/locations'
+    | '/_authenticated/pos'
     | '/_authenticated/products'
     | '/_authenticated/stock'
   fileRoutesById: FileRoutesById
@@ -161,6 +173,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/pos': {
+      id: '/_authenticated/pos'
+      path: '/pos'
+      fullPath: '/pos'
+      preLoaderRoute: typeof AuthenticatedPosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/locations': {
       id: '/_authenticated/locations'
       path: '/locations'
@@ -189,6 +208,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCategoriesRoute: typeof AuthenticatedCategoriesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLocationsRoute: typeof AuthenticatedLocationsRoute
+  AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedProductsRoute: typeof AuthenticatedProductsRoute
   AuthenticatedStockRoute: typeof AuthenticatedStockRoute
 }
@@ -197,6 +217,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCategoriesRoute: AuthenticatedCategoriesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLocationsRoute: AuthenticatedLocationsRoute,
+  AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedProductsRoute: AuthenticatedProductsRoute,
   AuthenticatedStockRoute: AuthenticatedStockRoute,
 }
