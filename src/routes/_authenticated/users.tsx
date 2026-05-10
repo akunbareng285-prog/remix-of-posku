@@ -1,9 +1,20 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -13,9 +24,10 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useAuth } from "@/hooks/use-auth";
-import { Shield, X, UserCircle2 } from "lucide-react";
+import { Shield, X, UserCircle2, Mail, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { inviteUser } from "@/lib/users.functions";
 
 type Role = "admin" | "cashier" | "warehouse_manager" | "owner";
 const ALL_ROLES: Role[] = ["admin", "owner", "warehouse_manager", "cashier"];
