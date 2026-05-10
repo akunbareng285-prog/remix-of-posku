@@ -65,30 +65,30 @@ function CategoriesPage() {
               placeholder="Nama kategori baru"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="font-bold"
             />
             <Button type="submit" disabled={add.isPending}>
               <Plus className="h-4 w-4 mr-1" /> Tambah
             </Button>
           </form>
         </Card>
-        <Card className="divide-y">
+        <div className="space-y-2">
           {(data ?? []).map((c) => (
-            <div key={c.id} className="px-5 py-3 flex items-center justify-between">
-              <span>{c.name}</span>
+            <div key={c.id} className="nb-border bg-card px-5 py-3 flex items-center justify-between nb-shadow-sm">
+              <span className="font-bold uppercase tracking-wide">{c.name}</span>
               <Button
                 size="icon"
-                variant="ghost"
+                variant="destructive"
                 onClick={() => del.mutate(c.id)}
-                className="text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           ))}
           {(data ?? []).length === 0 && (
-            <p className="px-5 py-6 text-sm text-muted-foreground">Belum ada kategori.</p>
+            <p className="px-5 py-6 text-sm font-bold uppercase tracking-wider text-foreground/60 text-center">Belum ada kategori.</p>
           )}
-        </Card>
+        </div>
       </div>
     </div>
   );

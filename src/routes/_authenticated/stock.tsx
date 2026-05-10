@@ -71,10 +71,10 @@ function StockPage() {
           </Select>
         </div>
 
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden p-0">
           <table className="w-full text-sm">
-            <thead className="bg-secondary text-left">
-              <tr>
+            <thead className="bg-foreground text-background text-left">
+              <tr className="font-display uppercase tracking-wider">
                 <th className="px-4 py-3">Produk</th>
                 <th className="px-4 py-3">SKU</th>
                 <th className="px-4 py-3">Lokasi</th>
@@ -82,29 +82,29 @@ function StockPage() {
                 <th className="px-4 py-3 text-right">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y-2 divide-foreground">
               {(stocks ?? []).map((s: any) => {
                 const low = s.quantity <= (s.products?.min_stock_level ?? 5);
                 return (
-                  <tr key={s.id}>
-                    <td className="px-4 py-3 font-medium">{s.products?.name}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{s.products?.sku}</td>
+                  <tr key={s.id} className="hover:bg-accent/30">
+                    <td className="px-4 py-3 font-bold">{s.products?.name}</td>
+                    <td className="px-4 py-3 font-mono text-xs uppercase">{s.products?.sku}</td>
                     <td className="px-4 py-3">{s.locations?.name}</td>
-                    <td className="px-4 py-3 text-right font-semibold">{s.quantity} {s.products?.unit}</td>
+                    <td className="px-4 py-3 text-right font-display text-base">{s.quantity} <span className="text-xs opacity-60">{s.products?.unit}</span></td>
                     <td className="px-4 py-3 text-right">
                       {low ? (
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-warning/30">
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 nb-border bg-warning font-black uppercase">
                           <AlertTriangle className="h-3 w-3" /> Tipis
                         </span>
                       ) : (
-                        <span className="inline-flex text-xs px-2 py-1 rounded-full bg-success/15 text-success">Aman</span>
+                        <span className="inline-flex text-xs px-2 py-1 nb-border bg-success font-black uppercase">Aman</span>
                       )}
                     </td>
                   </tr>
                 );
               })}
               {(stocks ?? []).length === 0 && (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Belum ada data stok.</td></tr>
+                <tr><td colSpan={5} className="px-4 py-10 text-center font-bold uppercase tracking-wider text-foreground/60">Belum ada data stok.</td></tr>
               )}
             </tbody>
           </table>
