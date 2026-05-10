@@ -63,19 +63,19 @@ function LocationsPage() {
             </Button>
           </form>
         </Card>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {(data ?? []).map((l) => (
-            <Card key={l.id} className="p-4 flex items-center justify-between">
+            <Card key={l.id} className="p-4 flex items-center justify-between nb-press">
               <div className="flex items-center gap-3">
-                <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${l.is_selling_point ? "bg-accent text-accent-foreground" : "bg-secondary"}`}>
+                <div className={`h-12 w-12 nb-border flex items-center justify-center ${l.is_selling_point ? "bg-primary text-primary-foreground" : "bg-accent"}`}>
                   {l.is_selling_point ? <Store className="h-5 w-5" /> : <Warehouse className="h-5 w-5" />}
                 </div>
                 <div>
-                  <div className="font-medium">{l.name}</div>
-                  <div className="text-xs text-muted-foreground">{l.is_selling_point ? "Toko / titik penjualan" : "Gudang"}</div>
+                  <div className="font-bold">{l.name}</div>
+                  <div className="text-xs uppercase tracking-wider text-foreground/60 mt-0.5">{l.is_selling_point ? "Toko / titik penjualan" : "Gudang"}</div>
                 </div>
               </div>
-              <Button size="icon" variant="ghost" onClick={() => del.mutate(l.id)} className="text-destructive hover:bg-destructive/10">
+              <Button size="icon" variant="destructive" onClick={() => del.mutate(l.id)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </Card>
