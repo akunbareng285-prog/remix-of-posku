@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, Plus, Minus, Trash2, LogOut } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Minus, Trash2, LogOut, ShoppingCart, Receipt } from 'lucide-react';
+import Image from 'next/image';
 
 interface Product {
   id: number;
@@ -12,6 +13,7 @@ interface Product {
   price: number;
   stock: number;
   category: string;
+  image: string;
 }
 
 interface CartItem extends Product {
@@ -19,12 +21,12 @@ interface CartItem extends Product {
 }
 
 const initialProducts: Product[] = [
-  { id: 1, sku: 'KPM01', name: 'Kopi Kenangan Mantan', price: 24000, stock: 12, category: 'MINUMAN' },
-  { id: 2, sku: 'RC01', name: 'Roti Coklat', price: 15000, stock: 8, category: 'MAKANAN' },
-  { id: 3, sku: 'ET01', name: 'Es Teh Tarik', price: 10000, stock: 25, category: 'MINUMAN' },
-  { id: 4, sku: 'MG01', name: 'Mie Goreng Spesial', price: 22000, stock: 5, category: 'MAKANAN' },
-  { id: 5, sku: 'AM01', name: 'Air Mineral 600ml', price: 5000, stock: 50, category: 'MINUMAN' },
-  { id: 6, sku: 'KK01', name: 'Keripik Kentang', price: 12000, stock: 15, category: 'SNACK' },
+  { id: 1, sku: 'KPM01', name: 'Kopi Kenangan Mantan', price: 24000, stock: 12, category: 'MINUMAN', image: '/products/kopi-kenangan.png' },
+  { id: 2, sku: 'RC01', name: 'Roti Coklat', price: 15000, stock: 8, category: 'MAKANAN', image: '/products/roti-coklat.png' },
+  { id: 3, sku: 'ET01', name: 'Es Teh Tarik', price: 10000, stock: 25, category: 'MINUMAN', image: '/products/es-teh-tarik.png' },
+  { id: 4, sku: 'MG01', name: 'Mie Goreng Spesial', price: 22000, stock: 5, category: 'MAKANAN', image: '/products/mie-goreng.png' },
+  { id: 5, sku: 'AM01', name: 'Air Mineral 600ml', price: 5000, stock: 50, category: 'MINUMAN', image: '/products/air-mineral.png' },
+  { id: 6, sku: 'KK01', name: 'Keripik Kentang', price: 12000, stock: 15, category: 'SNACK', image: '/products/keripik-kentang.png' },
 ];
 
 export default function PosPage() {
@@ -53,14 +55,12 @@ export default function PosPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('SEMUA');
 
-  // Filter functionality
   const filteredProducts = initialProducts.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || product.sku.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'SEMUA' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  // Cart functionality
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
@@ -89,145 +89,182 @@ export default function PosPage() {
 
   const handleCheckout = () => {
     if (cart.length === 0) return alert('Keranjang kosong!');
-    alert(`Pembayaran sebesar Rp ${total.toLocaleString('id-ID')} berhasil diproses!`);
-    setCart([]); // Clear cart after checkout
+    alert(`Pembayaran sebesar Rp ${Math.round(total).toLocaleString('id-ID')} berhasil diproses!`);
+    setCart([]);
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.11; // PPN 11%
+  const tax = subtotal * 0.11;
   const total = subtotal + tax;
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const categories = ['SEMUA', 'MAKANAN', 'MINUMAN', 'SNACK'];
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden font-sans">
-      {/* Sisi Kiri: Keranjang Belanja */}
-      <div className="w-1/3 min-w-[350px] bg-white border-r-[4px] border-black flex flex-col z-10 shadow-[4px_0px_0px_0px_#000]">
-        {/* Header Header */}
-        <div className="p-4 border-b-[4px] border-black flex items-center gap-4 bg-white rounded-tl-xl">
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+      {/* Left: Cart Panel */}
+      <div className="w-[380px] min-w-[380px] bg-white border-r border-card-border flex flex-col">
+        {/* Cart Header */}
+        <div className="px-5 py-4 border-b border-card-border flex items-center gap-3">
           {userRole === 'KASIR' ? (
-            <button onClick={handleLogout} className="neo-button-secondary py-1 px-3 !shadow-none !border-[2px] bg-black text-white hover:bg-[#5644FF] transition-colors rounded-xl" title="Logout">
-              <LogOut size={20} className="stroke-[3px]" />
+            <button onClick={handleLogout} className="pro-button-ghost !p-2 !rounded-lg" title="Logout">
+              <LogOut size={18} />
             </button>
           ) : (
-            <Link href="/" className="neo-button-secondary py-1 px-3 !shadow-none !border-[2px] rounded-xl" title="Kembali ke Dashboard">
-              <ArrowLeft size={20} className="stroke-[3px]" />
+            <Link href="/" className="pro-button-ghost !p-2 !rounded-lg" title="Kembali ke Dashboard">
+              <ArrowLeft size={18} />
             </Link>
           )}
-          <div>
-            <h2 className="font-black text-black uppercase tracking-tighter text-xl">Transaksi</h2>
-            <p className="text-xs font-bold text-black uppercase">Kasir: {userName} | Pusat</p>
+          <div className="flex-1">
+            <h2 className="text-base font-semibold text-text-primary">Transaksi</h2>
+            <p className="text-xs text-text-muted">Kasir: {userName} • Pusat</p>
+          </div>
+          <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg">
+            <ShoppingCart size={14} className="text-text-muted" />
+            <span className="text-xs font-semibold text-text-primary">{totalItems}</span>
           </div>
         </div>
 
-        {/* List Keranjang */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+        {/* Cart Items */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {cart.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-black/50">
-              <p className="font-black uppercase text-xl">Keranjang Kosong</p>
-              <p className="text-sm font-bold uppercase mt-2">Pilih produk di layar kanan</p>
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                <Receipt size={24} className="text-text-muted" />
+              </div>
+              <p className="text-sm font-semibold text-text-secondary">Keranjang Kosong</p>
+              <p className="text-xs text-text-muted mt-1">Pilih produk di sebelah kanan</p>
             </div>
           ) : (
             cart.map((item) => (
-              <div key={item.id} className="neo-card flex flex-col !p-2 bg-white relative group">
+              <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80 border border-card-border group hover:bg-slate-100/80 transition-colors">
+                <div className="w-10 h-10 rounded-lg overflow-hidden bg-white border border-card-border shrink-0 relative">
+                  <Image src={item.image} alt={item.name} fill className="object-cover" sizes="40px" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-text-primary truncate">{item.name}</p>
+                  <p className="text-xs text-text-muted">Rp {item.price.toLocaleString('id-ID')}</p>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  <button
+                    onClick={() => updateQuantity(item.id, -1)}
+                    className="w-7 h-7 rounded-lg bg-white border border-card-border flex items-center justify-center hover:bg-slate-50 transition-colors"
+                  >
+                    <Minus size={12} className="text-text-secondary" />
+                  </button>
+                  <span className="w-8 text-center text-sm font-semibold text-text-primary">{item.quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(item.id, 1)}
+                    className="w-7 h-7 rounded-lg bg-white border border-card-border flex items-center justify-center hover:bg-slate-50 transition-colors"
+                  >
+                    <Plus size={12} className="text-text-secondary" />
+                  </button>
+                </div>
+                <div className="text-right shrink-0 ml-1">
+                  <p className="text-sm font-semibold text-text-primary">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</p>
+                </div>
                 <button
                   onClick={() => removeFromCart(item.id)}
-                  className="absolute -right-3 -top-3 bg-neo-primary text-white border-[3px] border-black p-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none rounded-xl"
+                  className="p-1.5 rounded-lg text-text-muted opacity-0 group-hover:opacity-100 hover:text-danger hover:bg-red-50 transition-all"
                 >
-                  <Trash2 size={16} className="stroke-[3px]" />
+                  <Trash2 size={14} />
                 </button>
-                <div className="flex justify-between font-black text-black text-sm uppercase tracking-tight mb-2 pr-4">
-                  <span className="line-clamp-1 mr-2">{item.name}</span>
-                  <span>Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-bold text-black">Rp {item.price.toLocaleString('id-ID')}</span>
-                  <div className="flex items-center bg-white border-[2px] border-black shadow-[2px_2px_0px_0px_#000] rounded-xl overflow-hidden">
-                    <button onClick={() => updateQuantity(item.id, -1)} className="p-1 px-2 border-r-[2px] border-black hover:bg-neo-primary hover:text-white transition-colors">
-                      <Minus size={16} className="stroke-[3px]" />
-                    </button>
-                    <span className="font-black text-sm w-8 text-center">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, 1)} className="p-1 px-2 border-l-[2px] border-black hover:bg-neo-primary hover:text-white transition-colors">
-                      <Plus size={16} className="stroke-[3px]" />
-                    </button>
-                  </div>
-                </div>
               </div>
             ))
           )}
         </div>
 
-        {/* Ringkasan & Tombol Bayar */}
-        <div className="border-t-[4px] border-black bg-white">
-          <div className="p-4 space-y-2 text-sm font-bold uppercase tracking-tight border-b-[4px] border-black bg-white">
-            <div className="flex justify-between text-black">
-              <span>Subtotal</span>
-              <span>Rp {subtotal.toLocaleString('id-ID')}</span>
+        {/* Summary & Pay */}
+        <div className="border-t border-card-border">
+          <div className="px-5 py-3 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-text-muted">Subtotal</span>
+              <span className="font-medium text-text-primary">Rp {subtotal.toLocaleString('id-ID')}</span>
             </div>
-            <div className="flex justify-between text-[#FF3366]">
-              <span>Pajak (11%)</span>
-              <span>Rp {tax.toLocaleString('id-ID')}</span>
+            <div className="flex justify-between text-sm">
+              <span className="text-text-muted">PPN (11%)</span>
+              <span className="font-medium text-text-secondary">Rp {Math.round(tax).toLocaleString('id-ID')}</span>
+            </div>
+            <div className="pt-2 border-t border-card-border flex justify-between">
+              <span className="text-base font-semibold text-text-primary">Total</span>
+              <span className="text-xl font-bold text-primary">Rp {Math.round(total).toLocaleString('id-ID')}</span>
             </div>
           </div>
 
-          <div className="flex justify-between items-center p-4 bg-[#5644FF] text-white">
-            <span className="font-black text-xl uppercase">Total</span>
-            <span className="font-black text-2xl tracking-tighter">Rp {total.toLocaleString('id-ID')}</span>
-          </div>
-
-          <div className="p-4 bg-white">
+          <div className="p-4 pt-0">
             <button
               onClick={handleCheckout}
               disabled={cart.length === 0}
-              className="w-full bg-[#5644FF] text-white font-black py-4 border-[3px] border-black shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] disabled:opacity-50 disabled:active:shadow-[4px_4px_0px_0px_#000] disabled:active:translate-x-0 disabled:active:translate-y-0 transition-all text-xl uppercase tracking-widest cursor-pointer rounded-xl"
+              className="pro-button-primary w-full py-3.5 text-base font-bold"
             >
-              BAYAR SEKARANG
+              <ShoppingCart size={18} />
+              Bayar Sekarang
             </button>
           </div>
         </div>
       </div>
 
-      {/* Sisi Kanan: Daftar Produk */}
-      <div className="flex-1 flex flex-col bg-white">
-        <div className="p-6 pb-0">
-          <div className="relative">
-            <Search className="absolute left-4 top-3 text-black stroke-[3px]" size={24} />
+      {/* Right: Product Grid */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Search & Filter */}
+        <div className="px-6 py-4 bg-white border-b border-card-border">
+          <div className="relative mb-3">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="SCAN BARCODE / KETIK NAMA PRODUK..."
-              className="w-full pl-14 pr-4 py-3 border-[4px] border-black bg-white focus:outline-none focus:bg-[#FFC107] shadow-[6px_6px_0px_0px_#000] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-[4px] focus:translate-y-[4px] transition-all font-black uppercase text-lg placeholder:text-black/50 rounded-xl"
+              placeholder="Scan barcode atau cari nama produk..."
+              className="pro-input pl-10 py-3 text-base"
             />
           </div>
 
-          <div className="flex gap-4 mt-6 overflow-x-auto pb-2 overflow-y-hidden">
-            {['SEMUA', 'MAKANAN', 'MINUMAN', 'SNACK'].map((cat) => (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-6 py-2 font-black uppercase border-[3px] border-black whitespace-nowrap active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${selectedCategory === cat ? 'bg-black text-white shadow-[4px_4px_0px_0px_#5644FF]' : 'neo-button-secondary !shadow-[4px_4px_0px_0px_#000]'}`}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200
+                  ${selectedCategory === cat
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'bg-slate-100 text-text-secondary hover:bg-slate-200'
+                  }`}
               >
-                {cat}
+                {cat.charAt(0) + cat.slice(1).toLowerCase()}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Product Grid */}
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredProducts.length === 0 ? (
-              <div className="col-span-full py-10 text-center font-black uppercase text-xl text-black/50">Produk tidak ditemukan</div>
+              <div className="col-span-full py-16 text-center">
+                <p className="text-text-muted font-medium">Produk tidak ditemukan</p>
+              </div>
             ) : (
               filteredProducts.map((product) => (
-                <div key={product.id} onClick={() => addToCart(product)} className="neo-card group cursor-pointer hover:bg-white">
-                  <div className="h-32 bg-white border-[3px] border-black flex items-center justify-center text-black font-black uppercase text-sm group-hover:bg-[#5644FF] group-hover:text-white transition-colors">
-                    [{product.category}]
+                <button
+                  key={product.id}
+                  onClick={() => addToCart(product)}
+                  className="pro-card-elevated text-left group cursor-pointer hover:border-primary/30 active:scale-[0.98] transition-all duration-200"
+                >
+                  <div className="h-28 rounded-xl bg-slate-50 overflow-hidden relative mb-3 group-hover:bg-primary/5 transition-colors">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                    />
                   </div>
-                  <h3 className="font-black mt-4 mb-2 text-black uppercase tracking-tight line-clamp-2 leading-tight flex-1 text-lg">{product.name}</h3>
-                  <div className="mt-auto pt-4 border-t-[3px] border-black flex justify-between items-center">
-                    <span className="font-black text-xl tracking-tighter text-[#5644FF]">Rp {product.price.toLocaleString('id-ID')}</span>
-                    <span className="text-xs font-black text-black bg-white border-[2px] border-black px-2 py-1 uppercase">SISA: {product.stock}</span>
+                  <h3 className="text-sm font-semibold text-text-primary line-clamp-2 leading-snug mb-2">{product.name}</h3>
+                  <div className="flex justify-between items-center mt-auto pt-3 border-t border-card-border">
+                    <span className="text-base font-bold text-primary">Rp {product.price.toLocaleString('id-ID')}</span>
+                    <span className="pro-badge-neutral text-[10px]">Stok: {product.stock}</span>
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>
