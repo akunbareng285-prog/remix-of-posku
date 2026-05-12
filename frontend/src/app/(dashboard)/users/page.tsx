@@ -85,13 +85,21 @@ export default function UsersPage() {
             className="w-full pl-12 pr-4 py-3 border-[3px] border-black font-bold focus:outline-none focus:bg-[#EED9B9] focus:shadow-[4px_4px_0px_0px_#000] transition-all bg-white rounded-xl"
           />
         </div>
-        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="border-[3px] border-black px-4 font-black uppercase bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_#000] transition-all rounded-xl cursor-pointer">
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="border-[3px] border-black px-4 font-black uppercase bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_#000] transition-all rounded-xl cursor-pointer"
+        >
           <option value="">Semua Role</option>
           <option value="ADMIN">Admin</option>
           <option value="MANAGER">Manager</option>
           <option value="KASIR">Kasir</option>
         </select>
-        <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="border-[3px] border-black px-4 font-black uppercase bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_#000] transition-all rounded-xl cursor-pointer">
+        <select
+          value={branchFilter}
+          onChange={(e) => setBranchFilter(e.target.value)}
+          className="border-[3px] border-black px-4 font-black uppercase bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_#000] transition-all rounded-xl cursor-pointer"
+        >
           <option value="">Semua Cabang</option>
           <option value="pusat">Pusat</option>
           <option value="depok">Depok</option>
