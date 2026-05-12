@@ -98,13 +98,13 @@ export default function PosPage() {
   const total = subtotal + tax;
 
   return (
-    <div className="flex h-screen bg-neo-bg overflow-hidden font-sans">
+    <div className="flex h-screen bg-white overflow-hidden font-sans">
       {/* Sisi Kiri: Keranjang Belanja */}
       <div className="w-1/3 min-w-[350px] bg-white border-r-[4px] border-black flex flex-col z-10 shadow-[4px_0px_0px_0px_#000]">
         {/* Header Header */}
-        <div className="p-4 border-b-[4px] border-black flex items-center gap-4 bg-neo-bg rounded-tl-xl">
+        <div className="p-4 border-b-[4px] border-black flex items-center gap-4 bg-white rounded-tl-xl">
           {userRole === 'KASIR' ? (
-            <button onClick={handleLogout} className="neo-button-secondary py-1 px-3 !shadow-none !border-[2px] bg-black text-white hover:bg-[#D53E0F] transition-colors rounded-xl" title="Logout">
+            <button onClick={handleLogout} className="neo-button-secondary py-1 px-3 !shadow-none !border-[2px] bg-black text-white hover:bg-[#5644FF] transition-colors rounded-xl" title="Logout">
               <LogOut size={20} className="stroke-[3px]" />
             </button>
           ) : (
@@ -127,7 +127,7 @@ export default function PosPage() {
             </div>
           ) : (
             cart.map((item) => (
-              <div key={item.id} className="neo-card flex flex-col !p-2 bg-neo-bg relative group">
+              <div key={item.id} className="neo-card flex flex-col !p-2 bg-white relative group">
                 <button
                   onClick={() => removeFromCart(item.id)}
                   className="absolute -right-3 -top-3 bg-neo-primary text-white border-[3px] border-black p-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none rounded-xl"
@@ -156,19 +156,19 @@ export default function PosPage() {
         </div>
 
         {/* Ringkasan & Tombol Bayar */}
-        <div className="border-t-[4px] border-black bg-neo-bg">
+        <div className="border-t-[4px] border-black bg-white">
           <div className="p-4 space-y-2 text-sm font-bold uppercase tracking-tight border-b-[4px] border-black bg-white">
             <div className="flex justify-between text-black">
               <span>Subtotal</span>
               <span>Rp {subtotal.toLocaleString('id-ID')}</span>
             </div>
-            <div className="flex justify-between text-[#9B0F06]">
+            <div className="flex justify-between text-[#FF3366]">
               <span>Pajak (11%)</span>
               <span>Rp {tax.toLocaleString('id-ID')}</span>
             </div>
           </div>
 
-          <div className="flex justify-between items-center p-4 bg-[#D53E0F] text-white">
+          <div className="flex justify-between items-center p-4 bg-[#5644FF] text-white">
             <span className="font-black text-xl uppercase">Total</span>
             <span className="font-black text-2xl tracking-tighter">Rp {total.toLocaleString('id-ID')}</span>
           </div>
@@ -177,7 +177,7 @@ export default function PosPage() {
             <button
               onClick={handleCheckout}
               disabled={cart.length === 0}
-              className="w-full bg-[#D53E0F] text-white font-black py-4 border-[3px] border-black shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] disabled:opacity-50 disabled:active:shadow-[4px_4px_0px_0px_#000] disabled:active:translate-x-0 disabled:active:translate-y-0 transition-all text-xl uppercase tracking-widest cursor-pointer rounded-xl"
+              className="w-full bg-[#5644FF] text-white font-black py-4 border-[3px] border-black shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] disabled:opacity-50 disabled:active:shadow-[4px_4px_0px_0px_#000] disabled:active:translate-x-0 disabled:active:translate-y-0 transition-all text-xl uppercase tracking-widest cursor-pointer rounded-xl"
             >
               BAYAR SEKARANG
             </button>
@@ -186,7 +186,7 @@ export default function PosPage() {
       </div>
 
       {/* Sisi Kanan: Daftar Produk */}
-      <div className="flex-1 flex flex-col bg-neo-bg">
+      <div className="flex-1 flex flex-col bg-white">
         <div className="p-6 pb-0">
           <div className="relative">
             <Search className="absolute left-4 top-3 text-black stroke-[3px]" size={24} />
@@ -195,7 +195,7 @@ export default function PosPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="SCAN BARCODE / KETIK NAMA PRODUK..."
-              className="w-full pl-14 pr-4 py-3 border-[4px] border-black bg-white focus:outline-none focus:bg-[#EED9B9] shadow-[6px_6px_0px_0px_#000] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-[4px] focus:translate-y-[4px] transition-all font-black uppercase text-lg placeholder:text-black/50 rounded-xl"
+              className="w-full pl-14 pr-4 py-3 border-[4px] border-black bg-white focus:outline-none focus:bg-[#FFC107] shadow-[6px_6px_0px_0px_#000] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-[4px] focus:translate-y-[4px] transition-all font-black uppercase text-lg placeholder:text-black/50 rounded-xl"
             />
           </div>
 
@@ -204,7 +204,7 @@ export default function PosPage() {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-6 py-2 font-black uppercase border-[3px] border-black whitespace-nowrap active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${selectedCategory === cat ? 'bg-black text-[#EED9B9] shadow-[4px_4px_0px_0px_#D53E0F]' : 'neo-button-secondary !shadow-[4px_4px_0px_0px_#000]'}`}
+                className={`px-6 py-2 font-black uppercase border-[3px] border-black whitespace-nowrap active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${selectedCategory === cat ? 'bg-black text-white shadow-[4px_4px_0px_0px_#5644FF]' : 'neo-button-secondary !shadow-[4px_4px_0px_0px_#000]'}`}
               >
                 {cat}
               </button>
@@ -219,13 +219,13 @@ export default function PosPage() {
             ) : (
               filteredProducts.map((product) => (
                 <div key={product.id} onClick={() => addToCart(product)} className="neo-card group cursor-pointer hover:bg-white">
-                  <div className="h-32 bg-[#EED9B9] border-[3px] border-black flex items-center justify-center text-black font-black uppercase text-sm group-hover:bg-[#D53E0F] group-hover:text-white transition-colors">
+                  <div className="h-32 bg-white border-[3px] border-black flex items-center justify-center text-black font-black uppercase text-sm group-hover:bg-[#5644FF] group-hover:text-white transition-colors">
                     [{product.category}]
                   </div>
                   <h3 className="font-black mt-4 mb-2 text-black uppercase tracking-tight line-clamp-2 leading-tight flex-1 text-lg">{product.name}</h3>
                   <div className="mt-auto pt-4 border-t-[3px] border-black flex justify-between items-center">
-                    <span className="font-black text-xl tracking-tighter text-[#D53E0F]">Rp {product.price.toLocaleString('id-ID')}</span>
-                    <span className="text-xs font-black text-black bg-[#EED9B9] border-[2px] border-black px-2 py-1 uppercase">SISA: {product.stock}</span>
+                    <span className="font-black text-xl tracking-tighter text-[#5644FF]">Rp {product.price.toLocaleString('id-ID')}</span>
+                    <span className="text-xs font-black text-black bg-white border-[2px] border-black px-2 py-1 uppercase">SISA: {product.stock}</span>
                   </div>
                 </div>
               ))

@@ -27,7 +27,7 @@ export default function ProductsPage() {
   if (role && role !== 'ADMIN') {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center h-[60vh]">
-        <div className="p-6 bg-[#D53E0F] text-white border-[4px] border-black shadow-[6px_6px_0px_0px_#000] mb-6 inline-block">
+        <div className="p-6 bg-[#5644FF] text-white border-[4px] border-black shadow-[6px_6px_0px_0px_#000] mb-6 inline-block">
           <Lock size={64} className="stroke-[3px]" />
         </div>
         <h1 className="text-4xl font-black uppercase text-black">Akses Ditolak</h1>
@@ -54,10 +54,10 @@ export default function ProductsPage() {
             placeholder="CARI NAMA / SKU PRODUK..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border-[3px] border-black bg-white focus:outline-none focus:bg-[#EED9B9] shadow-[4px_4px_0px_0px_#000] font-black uppercase text-sm placeholder:text-black/50 transition-all rounded-xl"
+            className="w-full pl-12 pr-4 py-3 border-[3px] border-black bg-white focus:outline-none focus:bg-[#FFC107] shadow-[4px_4px_0px_0px_#000] font-black uppercase text-sm placeholder:text-black/50 transition-all rounded-xl"
           />
         </div>
-        <select className="border-[3px] border-black px-4 py-3 font-black uppercase bg-white shadow-[4px_4px_0px_0px_#000] outline-none cursor-pointer focus:bg-[#EED9B9] transition-colors rounded-xl">
+        <select className="border-[3px] border-black px-4 py-3 font-black uppercase bg-white shadow-[4px_4px_0px_0px_#000] outline-none cursor-pointer focus:bg-[#FFC107] transition-colors rounded-xl">
           <option>SEMUA KATEGORI</option>
           <option>MAKANAN</option>
           <option>MINUMAN</option>
@@ -66,7 +66,7 @@ export default function ProductsPage() {
 
       <div className="border-[4px] border-black bg-white shadow-[6px_6px_0px_0px_#000] overflow-hidden rounded-xl">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-black text-[#EED9B9] uppercase font-black text-sm">
+          <thead className="bg-black text-white uppercase font-black text-sm">
             <tr>
               <th className="p-4 border-b-[4px] border-black">SKU</th>
               <th className="p-4 border-b-[4px] border-black">Nama Produk</th>
@@ -78,18 +78,18 @@ export default function ProductsPage() {
           </thead>
           <tbody>
             {filtered.map((prod) => (
-              <tr key={prod.id} className="hover:bg-[#EED9B9] transition-colors border-b-[2px] border-black last:border-b-0 group">
+              <tr key={prod.id} className="hover:bg-[#FFC107] transition-colors border-b-[2px] border-black last:border-b-0 group">
                 <td className="p-4 font-bold text-sm bg-black/5 group-hover:bg-transparent">{prod.sku}</td>
                 <td className="p-4 font-black uppercase tracking-tight">{prod.name}</td>
                 <td className="p-4 font-bold text-sm uppercase">{prod.category}</td>
-                <td className="p-4 font-black text-[#D53E0F] border-l-[2px] border-black">Rp {prod.price.toLocaleString('id-ID')}</td>
+                <td className="p-4 font-black text-[#5644FF] border-l-[2px] border-black">Rp {prod.price.toLocaleString('id-ID')}</td>
                 <td className="p-4 font-black border-l-[2px] border-black text-lg">{prod.stock}</td>
                 <td className="p-4 border-l-[2px] border-black">
                   <div className="flex justify-center gap-2">
                     <button className="p-2 border-[2px] border-black bg-white hover:bg-black hover:text-white transition-colors shadow-[2px_2px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none rounded-xl">
                       <Edit size={16} className="stroke-[3px]" />
                     </button>
-                    <button className="p-2 border-[2px] border-black bg-white hover:bg-[#D53E0F] hover:text-white transition-colors shadow-[2px_2px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none rounded-xl">
+                    <button className="p-2 border-[2px] border-black bg-white hover:bg-[#5644FF] hover:text-white transition-colors shadow-[2px_2px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none rounded-xl">
                       <Trash2 size={16} className="stroke-[3px]" />
                     </button>
                   </div>

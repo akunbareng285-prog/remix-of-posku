@@ -43,17 +43,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const baseClass = 'flex items-center gap-3 px-3 py-2 font-bold uppercase transition-colors rounded-xl text-sm';
 
     if (isActive) {
-      return 'flex items-center gap-3 px-4 py-3 bg-[#EED9B9] text-black border-[3px] border-black font-black uppercase tracking-tight shadow-[4px_4px_0px_0px_#000] translate-x-[-2px] translate-y-[-2px] rounded-xl';
+      return 'flex items-center gap-3 px-4 py-3 bg-[#FFC107] text-black border-[3px] border-black font-black uppercase tracking-tight shadow-[4px_4px_0px_0px_#000] translate-x-[-2px] translate-y-[-2px] rounded-xl';
     }
-    return `${baseClass} text-[#EED9B9] hover:bg-black/20`;
+    return `${baseClass} text-white hover:bg-black/20`;
   };
 
   return (
-    <div className="flex h-screen bg-neo-bg overflow-hidden font-sans">
-      {/* Sidebar: Deep Maroon (#5E0006) for solid pillar feel */}
-      <aside className="w-64 bg-[#5E0006] text-[#EED9B9] flex flex-col transition-all border-r-[3px] border-black z-20 shrink-0">
-        <div className="flex h-20 items-center justify-center px-6 border-b-[4px] border-black bg-[#5E0006]">
-          <h1 className="text-2xl font-black tracking-tighter uppercase">
+    <div className="flex h-screen bg-white overflow-hidden font-sans">
+      {/* Sidebar: Dark Navy (#111827) for solid pillar feel */}
+      <aside className="w-64 bg-[#111827] text-white flex flex-col transition-all border-r-[3px] border-black z-20 shrink-0">
+        <div className="flex h-20 items-center justify-center px-6 border-b-[4px] border-black bg-[#111827]">
+          <h1 className="text-2xl font-black tracking-tighter uppercase text-white">
             POS <span className="text-neo-primary">Admin</span>
           </h1>
         </div>
@@ -113,7 +113,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="p-4 border-t-[3px] border-black">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-2 px-3 py-3 bg-black text-white font-bold uppercase border-2 border-black hover:bg-[#D53E0F] hover:text-[#EED9B9] transition-colors shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] rounded-xl"
+            className="flex w-full items-center gap-2 px-3 py-3 bg-black text-white font-bold uppercase border-2 border-black hover:bg-[#FF3366] hover:text-white transition-colors shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] rounded-xl"
           >
             <LogOut size={20} className="stroke-[3px]" />
             Logout
@@ -122,7 +122,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-neo-bg relative z-10 min-w-0">
+      <div className="flex-1 flex flex-col overflow-hidden bg-white relative z-10 min-w-0">
         {/* Header with Hard Shadows and Thick Borders -> Adapted to the new reference elements */}
         <header className="h-20 flex items-center justify-between px-6 lg:px-8 bg-white border-b-[4px] border-black z-10 w-full shadow-[0px_4px_0px_0px_#000]">
           {/* Left section: Search & Date */}
@@ -132,7 +132,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <input
                 type="text"
                 placeholder="Cari transaksi..."
-                className="pl-10 pr-4 py-2 border-[3px] border-black text-black font-bold focus:outline-none focus:bg-[#EED9B9] focus:shadow-[4px_4px_0px_0px_#000] transition-all w-48 md:w-64 rounded-xl"
+                className="pl-10 pr-4 py-2 border-[3px] border-black text-black font-bold focus:outline-none focus:bg-[#FFC107] focus:shadow-[4px_4px_0px_0px_#000] transition-all w-48 md:w-64 rounded-xl"
               />
             </div>
 
@@ -145,7 +145,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Right section: Badges & Profile */}
           <div className="flex items-center gap-4 lg:gap-6 ml-auto shrink-0">
             {/* Brutalist Alert Badge */}
-            <div className="flex items-center gap-2 text-sm font-black uppercase text-[#EED9B9] bg-[#9B0F06] border-[3px] border-black px-3 py-2 cursor-pointer shadow-[4px_4px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all rounded-xl">
+            <div className="flex items-center gap-2 text-sm font-black uppercase text-white bg-[#FF3366] border-[3px] border-black px-3 py-2 cursor-pointer shadow-[4px_4px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all rounded-xl">
               <Bell size={18} className="stroke-[3px]" />
               <span className="hidden md:inline">5 Notif</span>
             </div>

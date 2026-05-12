@@ -29,10 +29,10 @@ export default function MutationsPage() {
             placeholder="CARI ID MUTASI / NAMA PRODUK..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border-[3px] border-black bg-white focus:outline-none focus:bg-[#EED9B9] shadow-[4px_4px_0px_0px_#000] font-black uppercase text-sm placeholder:text-black/50 transition-all rounded-xl"
+            className="w-full pl-12 pr-4 py-3 border-[3px] border-black bg-white focus:outline-none focus:bg-[#FFC107] shadow-[4px_4px_0px_0px_#000] font-black uppercase text-sm placeholder:text-black/50 transition-all rounded-xl"
           />
         </div>
-        <select className="border-[3px] border-black px-4 py-3 font-black uppercase bg-white shadow-[4px_4px_0px_0px_#000] outline-none cursor-pointer focus:bg-[#EED9B9] transition-colors rounded-xl">
+        <select className="border-[3px] border-black px-4 py-3 font-black uppercase bg-white shadow-[4px_4px_0px_0px_#000] outline-none cursor-pointer focus:bg-[#FFC107] transition-colors rounded-xl">
           <option>SEMUA STATUS</option>
           <option>PROSES</option>
           <option>SELESAI</option>
@@ -41,7 +41,7 @@ export default function MutationsPage() {
 
       <div className="border-[4px] border-black bg-white shadow-[6px_6px_0px_0px_#000] overflow-hidden">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-black text-[#EED9B9] uppercase font-black text-sm">
+          <thead className="bg-black text-white uppercase font-black text-sm">
             <tr>
               <th className="p-4 border-b-[4px] border-black">ID & Tanggal</th>
               <th className="p-4 border-b-[4px] border-black">Produk & Qty</th>
@@ -51,7 +51,7 @@ export default function MutationsPage() {
           </thead>
           <tbody>
             {filtered.map((mut) => (
-              <tr key={mut.id} className="hover:bg-[#EED9B9] transition-colors border-b-[2px] border-black last:border-b-0 group">
+              <tr key={mut.id} className="hover:bg-[#FFC107] transition-colors border-b-[2px] border-black last:border-b-0 group">
                 <td className="p-4">
                   <div className="font-black text-lg">{mut.id}</div>
                   <div className="text-sm font-bold text-black/70">{mut.date}</div>
@@ -62,9 +62,9 @@ export default function MutationsPage() {
                 </td>
                 <td className="p-4 font-black uppercase border-l-[2px] border-black text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="bg-black text-[#EED9B9] px-2 py-1">{mut.from}</span>
+                    <span className="bg-black text-white px-2 py-1">{mut.from}</span>
                     <ArrowRight size={16} className="stroke-[3px]" />
-                    <span className="bg-[#D53E0F] text-white px-2 py-1">{mut.to}</span>
+                    <span className="bg-[#5644FF] text-white px-2 py-1">{mut.to}</span>
                   </div>
                 </td>
                 <td className="p-4 border-l-[2px] border-black text-center">

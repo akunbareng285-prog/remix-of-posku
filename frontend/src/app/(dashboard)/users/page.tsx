@@ -53,7 +53,7 @@ export default function UsersPage() {
   if (role && role !== 'ADMIN') {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center h-[60vh]">
-        <div className="p-6 bg-[#D53E0F] text-white border-[4px] border-black shadow-[6px_6px_0px_0px_#000] mb-6 inline-block rounded-xl">
+        <div className="p-6 bg-[#5644FF] text-white border-[4px] border-black shadow-[6px_6px_0px_0px_#000] mb-6 inline-block rounded-xl">
           <Lock size={64} className="stroke-[3px]" />
         </div>
         <h1 className="text-4xl font-black uppercase text-black">Akses Ditolak</h1>
@@ -82,7 +82,7 @@ export default function UsersPage() {
             placeholder="Cari nama pegawai..."
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border-[3px] border-black font-bold focus:outline-none focus:bg-[#EED9B9] focus:shadow-[4px_4px_0px_0px_#000] transition-all bg-white rounded-xl"
+            className="w-full pl-12 pr-4 py-3 border-[3px] border-black font-bold focus:outline-none focus:bg-[#FFC107] focus:shadow-[4px_4px_0px_0px_#000] transition-all bg-white rounded-xl"
           />
         </div>
         <select
@@ -112,9 +112,9 @@ export default function UsersPage() {
           .filter((u) => (roleFilter ? u.role === roleFilter : true))
           .filter((u) => (branchFilter ? u.branch === branchFilter : true))
           .map((user) => (
-            <div key={user.id} className={`neo-card p-0 overflow-hidden flex flex-col h-full ${user.role === 'ADMIN' ? 'bg-[#EED9B9]' : 'bg-white'}`}>
+            <div key={user.id} className={`neo-card p-0 overflow-hidden flex flex-col h-full ${user.role === 'ADMIN' ? 'bg-white' : 'bg-white'}`}>
               {/* Header Card berbasis Role */}
-              <div className={`p-4 flex justify-between items-center border-b-[4px] border-black ${user.role === 'ADMIN' ? 'bg-black text-[#EED9B9]' : user.role === 'MANAGER' ? 'bg-[#D53E0F] text-white' : 'bg-white text-black'}`}>
+              <div className={`p-4 flex justify-between items-center border-b-[4px] border-black ${user.role === 'ADMIN' ? 'bg-black text-white' : user.role === 'MANAGER' ? 'bg-[#5644FF] text-white' : 'bg-white text-black'}`}>
                 <span className="font-black uppercase flex items-center gap-2">
                   <Shield size={18} /> {user.role}
                 </span>
@@ -134,7 +134,7 @@ export default function UsersPage() {
                   {user.role !== 'ADMIN' && (
                     <div className="flex gap-2">
                       <select
-                        className="w-full text-xs font-bold border-[2px] border-black p-2 focus:outline-none uppercase bg-[#EED9B9] rounded-xl cursor-pointer"
+                        className="w-full text-xs font-bold border-[2px] border-black p-2 focus:outline-none uppercase bg-white rounded-xl cursor-pointer"
                         value={user.role}
                         onChange={(e) => {
                           const updatedUsers = users.map((u) => (u.id === user.id ? { ...u, role: e.target.value as UserData['role'] } : u));
@@ -163,7 +163,7 @@ export default function UsersPage() {
       {isEditModalOpen && editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_#000] w-full max-w-lg">
-            <div className="bg-[#D53E0F] text-white p-4 border-b-[4px] border-black flex justify-between items-center">
+            <div className="bg-[#5644FF] text-white p-4 border-b-[4px] border-black flex justify-between items-center">
               <h2 className="font-black uppercase text-xl flex items-center gap-2">
                 <Edit size={20} /> Edit Pegawai
               </h2>
@@ -179,7 +179,7 @@ export default function UsersPage() {
                   type="text"
                   value={editingUser.name}
                   onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
-                  className="w-full px-4 py-3 border-[3px] border-black font-bold focus:outline-none focus:bg-[#EED9B9] focus:shadow-[4px_4px_0px_0px_#000] transition-all"
+                  className="w-full px-4 py-3 border-[3px] border-black font-bold focus:outline-none focus:bg-[#FFC107] focus:shadow-[4px_4px_0px_0px_#000] transition-all"
                   required
                 />
               </div>
@@ -190,7 +190,7 @@ export default function UsersPage() {
                   <select
                     value={editingUser.role}
                     onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as any })}
-                    className="w-full px-4 py-3 border-[3px] border-black font-bold focus:outline-none focus:bg-[#EED9B9] focus:shadow-[4px_4px_0px_0px_#000] transition-all uppercase"
+                    className="w-full px-4 py-3 border-[3px] border-black font-bold focus:outline-none focus:bg-[#FFC107] focus:shadow-[4px_4px_0px_0px_#000] transition-all uppercase"
                   >
                     <option value="ADMIN">ADMIN</option>
                     <option value="MANAGER">MANAGER</option>
@@ -202,7 +202,7 @@ export default function UsersPage() {
                   <select
                     value={editingUser.branch}
                     onChange={(e) => setEditingUser({ ...editingUser, branch: e.target.value })}
-                    className="w-full px-4 py-3 border-[3px] border-black font-bold focus:outline-none focus:bg-[#EED9B9] focus:shadow-[4px_4px_0px_0px_#000] transition-all uppercase"
+                    className="w-full px-4 py-3 border-[3px] border-black font-bold focus:outline-none focus:bg-[#FFC107] focus:shadow-[4px_4px_0px_0px_#000] transition-all uppercase"
                   >
                     <option value="pusat">Pusat</option>
                     <option value="depok">Depok</option>
@@ -211,12 +211,12 @@ export default function UsersPage() {
               </div>
 
               <div className="flex gap-4 pt-4 mt-6 border-t-[3px] border-black border-dashed">
-                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors bg-[#EED9B9]">
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors bg-white">
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-[#D53E0F] text-white border-[3px] border-black font-black uppercase hover:translate-x-[2px] hover:translate-y-[2px] shadow-[4px_4px_0px_0px_#000] hover:shadow-none transition-all flex justify-center items-center gap-2"
+                  className="flex-1 py-3 bg-[#5644FF] text-white border-[3px] border-black font-black uppercase hover:translate-x-[2px] hover:translate-y-[2px] shadow-[4px_4px_0px_0px_#000] hover:shadow-none transition-all flex justify-center items-center gap-2"
                 >
                   <Save size={20} /> Simpan
                 </button>
