@@ -1,8 +1,14 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #eed9b9;
+  --foreground: #000000;
+
+  /* Brand Colors */
+  --neo-bg: #eed9b9;
+  --neo-primary: #d53e0f;
+  --neo-hover: #9b0f06;
+  --neo-contrast: #5e0006;
 }
 
 @theme inline {
@@ -10,17 +16,37 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-neo-bg: var(--neo-bg);
+  --color-neo-primary: var(--neo-primary);
+  --color-neo-hover: var(--neo-hover);
+  --color-neo-contrast: var(--neo-contrast);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Komponen Neo-Brutalism */
+@layer components {
+  .neo-card {
+    @apply bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_#000] p-4 transition-all rounded-xl;
+  }
+
+  .neo-button-primary {
+    @apply bg-[var(--neo-primary)] text-[var(--neo-bg)] border-[3px] border-black font-black py-2 px-6 
+           shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide rounded-xl;
+  }
+
+  .neo-button-secondary {
+    @apply bg-white text-black border-[3px] border-black font-bold py-2 px-6 
+           shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] uppercase tracking-wide rounded-xl;
+  }
+
+  .neo-input {
+    @apply border-[3px] border-black p-3 bg-white font-bold focus:outline-none focus:bg-[var(--neo-bg)] shadow-[4px_4px_0px_0px_#000] focus:shadow-none focus:translate-x-[4px] focus:translate-y-[4px] transition-all rounded-xl;
+  }
 }

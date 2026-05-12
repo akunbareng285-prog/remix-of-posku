@@ -1,0 +1,226 @@
+'use client';
+
+import { 
+  LayoutDashboard, 
+  ShoppingCart, 
+  Package, 
+  ArrowRightLeft, 
+  FileBarChart, 
+  Settings, 
+  LogOut, 
+  Store, 
+  Users, 
+  Search, 
+  Calendar,
+  Bell,
+  Star
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [role, setRole] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedRole = localStorage.getItem('pos_role');
+    const savedName = localStorage.getItem('pos_user_name');
+    if (!savedRole) {
+      router.push('/login');
+    } else if (savedRole === 'KASIR') {
+      router.push('/pos'); // Kasir dilarang masuk dashboard
+    } else {
+      setRole(savedRole);
+      setUserName(savedName);
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('pos_role');
+    localStorage.removeItem('pos_user_name');
+    router.push('/login');
+  };
+
+  if (!role) return null; // Wait for mounting/checking
+
+  const canSeeDashboard = ['ADMIN', 'MANAGER'].includes(role);
+  const canSeeProducts = ['ADMIN'].includes(role);
+  const canSeeMutations = ['ADMIN', 'MANAGER'].includes(role);
+  const canSeeReports = ['ADMIN', 'MANAGER'].includes(role);
+  const canSeeSettings = ['ADMIN'].includes(role);
+
+  // Link styling components
+  const getLinkStyle = (path: string) => {
+    const isActive = pathname === path;
+    const baseStyle = "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 mt-1";
+    return isActive 
+      ? `${baseStyle} bg-[#5644FF] text-white shadow-md shadow-[#5644FF]/20`
+      : `${baseStyle} text-gray-400 hover:bg-white/5 hover:text-gray-200`;
+  };
+
+  return (
+    <div className="flex h-screen bg-[#F8F9FB] overflow-hidden font-sans">
+      
+      {/* Sidebar - Dark Modern SaaS Theme */}
+      <aside className="w-64 bg-[#111827] text-white flex flex-col z-20 shadow-xl overflow-hidden relative border-r-0">
+        {/* Glow effect in background */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#5644FF]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+
+        {/* Logo Section */}
+        <div className="flex h-20 items-center px-6 gap-3 pt-4">
+          <div className="w-10 h-10 bg-[#CCFF00] rounded-xl flex items-center justify-center shadow-lg shadow-[#CCFF00]/20">
+            <span className="text-[#111827] font-black text-xl tracking-tighter">P</span>
+          </div>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight text-white leading-tight">M-Local POS</h1>
+            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Multi-Outlet System</p>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto mt-4 z-10 w-full relative">
+          <p className="px-4 text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">Menu Utama</p>
+
+          {canSeeDashboard && (
+            <Link href="/" className={getLinkStyle('/')}>
+              <LayoutDashboard size={18} className={pathname === '/' ? 'text-white' : ''} />
+              <span className="text-sm">Dashboard</span>
+            </Link>
+          )}
+
+          <Link href="/pos" className={getLinkStyle('/pos')}>
+            <ShoppingCart size={18} />
+            <span className="text-sm">Kasir (POS)</span>
+          </Link>
+
+          {canSeeProducts && (
+            <Link href="/products" className={getLinkStyle('/products')}>
+              <Package size={18} />
+              <span className="text-sm">Produk Master</span>
+            </Link>
+          )}
+
+          {canSeeMutations && (
+            <Link href="/mutations" className={getLinkStyle('/mutations')}>
+              <ArrowRightLeft size={18} />
+              <span className="text-sm">Mutasi Stok</span>
+            </Link>
+          )}
+
+          {canSeeReports && (
+            <Link href="/reports" className={getLinkStyle('/reports')}>
+              <FileBarChart size={18} />
+              <span className="text-sm">Laporan</span>
+            </Link>
+          )}
+
+          {canSeeSettings && (
+            <div className="pt-6 mt-4 relative">
+              <p className="px-4 text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">Konfigurasi</p>
+              
+              <Link href="/stores" className={getLinkStyle('/stores')}>
+                <Store size={18} />
+                <span className="text-sm">Atur Toko</span>
+              </Link>
+              <Link href="/users" className={getLinkStyle('/users')}>
+                <Users size={18} />
+                <span className="text-sm">Pegawai & Role</span>
+              </Link>
+              <Link href="/settings" className={getLinkStyle('/settings')}>
+                <Settings size={18} />
+                <span className="text-sm">Sistem & Profil</span>
+              </Link>
+            </div>
+          )}
+        </nav>
+
+        {/* User Footer Logout */}
+        <div className="p-4 z-10">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-rose-400 transition-colors"
+          >
+            <LogOut size={18} />
+            <span className="text-sm font-medium">Log out</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+        
+        {/* Header - White, Clean SaaS */}
+        <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-gray-200 z-10 w-full shrink-0 shadow-sm">
+          
+          {/* Left: Search & Nav Info */}
+          <div className="flex items-center gap-6">
+            <div className="relative group hidden md:block">
+              <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
+              <input 
+                type="text" 
+                placeholder="Cari transaksi..." 
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm w-64 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5644FF]/20 focus:border-[#5644FF] transition-all"
+              />
+            </div>
+            
+            <div className="hidden lg:flex items-center gap-2 text-sm text-gray-500 font-medium bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+              <Calendar size={14} />
+              Senin, 12 Mei 2026
+            </div>
+          </div>
+
+          {/* Right: Badges & Profile */}
+          <div className="flex items-center gap-4">
+            
+            {/* SaaS Badges */}
+            <div className="hidden md:flex items-center gap-3 mr-2">
+               <div className="flex items-center gap-2 bg-[#CCFF00]/10 border border-[#CCFF00]/30 px-3 py-1 rounded-full">
+                  <span className="text-xs font-bold text-emerald-700">LEVEL {(role === 'ADMIN' ? 12 : role === 'MANAGER' ? 7 : 3)}</span>
+                  <div className="w-16 h-1.5 bg-white rounded-full overflow-hidden">
+                     <div className="h-full bg-[#CCFF00] w-[65%]"></div>
+                  </div>
+               </div>
+
+               <div className="bg-[#CCFF00] text-black px-3 py-1 rounded-lg flex items-center gap-1 text-xs font-bold">
+                  <Star size={12} className="fill-black" />
+                  {role === 'ADMIN' ? '50' : '15'}
+               </div>
+               
+               {role !== 'KASIR' && (
+                 <div className="bg-rose-500 text-white px-3 py-1 rounded-lg flex items-center gap-1 text-xs font-bold shadow-sm shadow-rose-500/20">
+                    <Bell size={12} />
+                    5 Notif
+                 </div>
+               )}
+            </div>
+
+            {/* Divider */}
+            <div className="h-6 w-px bg-gray-200"></div>
+
+            {/* Profile Avatar */}
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <div className="text-right hidden sm:block">
+                 <p className="font-bold text-sm text-gray-800 leading-tight group-hover:text-[#5644FF] transition-colors">{userName}</p>
+                 <p className="text-[11px] font-semibold text-[#5644FF] capitalize">{role}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-[#5644FF] flex items-center justify-center text-white font-bold text-sm shadow-md shadow-[#5644FF]/30 ring-2 ring-white">
+                {userName?.substring(0, 2).toUpperCase() || 'AD'}
+              </div>
+            </div>
+
+          </div>
+        </header>
+
+        {/* Scrollable Main Canvas */}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto scroll-smooth">
+          <div className="max-w-7xl mx-auto p-8">
+            {children}
+          </div>
+        </main>
+      </div>
+      
+    </div>
+  );
+}

@@ -1,0 +1,81 @@
+cat << 'EOF' > src/app/\(dashboard\)/layout.tsx
+import { LayoutDashboard, ShoppingCart, Package, ArrowRightLeft, FileBarChart, Settings, LogOut, Bell } from "lucide-react";
+import Link from "next/link";
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-screen bg-neo-bg overflow-hidden font-sans">
+      {/* Sidebar: Deep Maroon (#5E0006) for solid pillar feel */}
+      <aside className="w-64 bg-[#5E0006] text-[#EED9B9] flex flex-col transition-all border-r-[3px] border-black z-20">
+        <div className="flex h-16 items-center justify-center px-6 border-b-[3px] border-black bg-[#5E0006]">
+          <h1 className="text-2xl font-black tracking-tighter uppercase">POS <span className="text-neo-primary">Admin</span></h1>
+        </div>
+        
+        <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
+          {/* Active Item: Cream Background, Black Text, Thick Border */}
+          <Link href="/" className="flex items-center gap-3 px-4 py-3 bg-[#EED9B9] text-black border-[3px] border-black font-black uppercase tracking-tight shadow-[4px_4px_0px_0px_#000] translate-x-[-2px] translate-y-[-2px]">
+            <LayoutDashboard size={20} className="stroke-[3px]" />
+            Dashboard
+          </Link>
+          
+          <Link href="/pos" className="flex items-center gap-3 px-3 py-2 text-[#EED9B9] hover:bg-black/20 font-bold uppercase transition-colors rounded-sm">
+            <ShoppingCart size={20} className="stroke-[2px]" />
+            Kasir (POS)
+          </Link>
+          <Link href="#" className="flex items-center gap-3 px-3 py-2 text-[#EED9B9] hover:bg-black/20 font-bold uppercase transition-colors rounded-sm">
+            <Package size={20} className="stroke-[2px]" />
+            Produk Master
+          </Link>
+          <Link href="#" className="flex items-center gap-3 px-3 py-2 text-[#EED9B9] hover:bg-black/20 font-bold uppercase transition-colors rounded-sm">
+            <ArrowRightLeft size={20} className="stroke-[2px]" />
+            Mutasi Stok
+          </Link>
+          <Link href="#" className="flex items-center gap-3 px-3 py-2 text-[#EED9B9] hover:bg-black/20 font-bold uppercase transition-colors rounded-sm">
+            <FileBarChart size={20} className="stroke-[2px]" />
+            Laporan
+          </Link>
+          <Link href="#" className="flex items-center gap-3 px-3 py-2 text-[#EED9B9] hover:bg-black/20 font-bold uppercase transition-colors rounded-sm">
+            <Settings size={20} className="stroke-[2px]" />
+            Pengaturan
+          </Link>
+        </nav>
+
+        <div className="p-4 border-t-[3px] border-black">
+          <button className="flex w-full items-center gap-2 px-3 py-3 bg-black text-white font-bold uppercase border-2 border-black hover:bg-[#D53E0F] hover:text-[#EED9B9] transition-colors shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]">
+            <LogOut size={20} className="stroke-[3px]" />
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-neo-bg relative z-10">
+        {/* Header with Hard Shadows and Thick Borders */}
+        <header className="h-16 flex items-center justify-between px-8 bg-white border-b-[4px] border-black z-10 w-full shadow-[0px_4px_0px_0px_#000]">
+          <h2 className="text-2xl font-black uppercase tracking-tight text-black">Overview</h2>
+          <div className="flex items-center gap-6">
+            
+            {/* Brutalist Alert Badge */}
+            <div className="flex items-center gap-2 text-sm font-black uppercase text-[#EED9B9] bg-[#9B0F06] border-[3px] border-black px-4 py-2 cursor-pointer shadow-[4px_4px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+              <Bell size={18} className="stroke-[3px]" />
+              5 Produk Stok Tipis
+            </div>
+
+            {/* Profile Avatar */}
+            <div className="h-10 w-10 bg-[#D53E0F] flex items-center justify-center text-[#EED9B9] font-black cursor-pointer border-[3px] border-black shadow-[4px_4px_0px_0px_#000]">
+              AD
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-8">
+          <div className="max-w-7xl mx-auto pb-12">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+EOF
