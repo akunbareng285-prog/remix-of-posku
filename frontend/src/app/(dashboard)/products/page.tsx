@@ -30,16 +30,13 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [role, setRole] = useState<string>('');
   const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [categories, setCategories] = useState(['MAKANAN', 'MINUMAN', 'SNACK']);
 
-  // Edit modal state
+  // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-
-  // Delete modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
-
-  // Add modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newProduct, setNewProduct] = useState<Omit<Product, 'id'>>({
     sku: '',
@@ -50,12 +47,26 @@ export default function ProductsPage() {
     image: '/products/kopi-kenangan.png',
   });
 
-  // Success toast
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'danger' } | null>(null);
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
+  // Load from localStorage on mount
   useEffect(() => {
     const userRole = localStorage.getItem('pos_role');
     setRole(userRole || '');
+
+    const savedProducts = localStorage.getItem('pos_products');
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts));
+    } else {
+      localStorage.setItem('pos_products', JSON.stringify(initialProducts));
+    }
+    
+    const savedCategories = localStorage.getItem('pos_categories');
+    if (savedCategories) {
+      setCategories(JSON.parse(savedCategories));
+    }
   }, []);
 
   useEffect(() => {
@@ -71,6 +82,17 @@ export default function ProductsPage() {
     return matchesSearch && matchesCategory;
   });
 
+  // Save to localStorage whenever products change
+  const syncProducts = (updatedProducts: Product[]) => {
+    setProducts(updatedProducts);
+    localStorage.setItem('pos_products', JSON.stringify(updatedProducts));
+  };
+
+  const syncCategories = (updatedCategories: string[]) => {
+    setCategories(updatedCategories);
+    localStorage.setItem('pos_categories', JSON.stringify(updatedCategories));
+  };
+
   // === EDIT ===
   const handleEditClick = (product: Product) => {
     setEditingProduct({ ...product });
@@ -80,7 +102,8 @@ export default function ProductsPage() {
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
-    setProducts((prev) => prev.map((p) => (p.id === editingProduct.id ? editingProduct : p)));
+    const updated = products.map((p) => (p.id === editingProduct.id ? editingProduct : p));
+    syncProducts(updated);
     setIsEditModalOpen(false);
     setEditingProduct(null);
     setToast({ message: `Produk "${editingProduct.name}" berhasil diperbarui`, type: 'success' });
@@ -95,7 +118,8 @@ export default function ProductsPage() {
   const handleConfirmDelete = () => {
     if (!deletingProduct) return;
     const name = deletingProduct.name;
-    setProducts((prev) => prev.filter((p) => p.id !== deletingProduct.id));
+    const updated = products.filter((p) => p.id !== deletingProduct.id);
+    syncProducts(updated);
     setIsDeleteModalOpen(false);
     setDeletingProduct(null);
     setToast({ message: `Produk "${name}" berhasil dihapus`, type: 'danger' });
@@ -106,30 +130,97 @@ export default function ProductsPage() {
     e.preventDefault();
     const newId = Math.max(...products.map((p) => p.id), 0) + 1;
     const product: Product = { ...newProduct, id: newId };
-    setProducts((prev) => [...prev, product]);
+    const updated = [...products, product];
+    syncProducts(updated);
     setIsAddModalOpen(false);
     setNewProduct({ sku: '', name: '', category: 'MAKANAN', price: 0, stock: 0, image: '/products/kopi-kenangan.png' });
     setToast({ message: `Produk "${product.name}" berhasil ditambahkan`, type: 'success' });
   };
 
-  const categories = ['MAKANAN', 'MINUMAN', 'SNACK'];
-  const availableImages = [
-    { label: 'Kopi', value: '/products/kopi-kenangan.png' },
-    { label: 'Roti', value: '/products/roti-coklat.png' },
-    { label: 'Es Teh', value: '/products/es-teh-tarik.png' },
-    { label: 'Mie Goreng', value: '/products/mie-goreng.png' },
-    { label: 'Air Mineral', value: '/products/air-mineral.png' },
-    { label: 'Keripik', value: '/products/keripik-kentang.png' },
-  ];
+  const handleAddCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newCategoryName.trim() && !categories.includes(newCategoryName.trim().toUpperCase())) {
+      const updated = [...categories, newCategoryName.trim().toUpperCase()];
+      syncCategories(updated);
+      setToast({ message: `Kategori "${newCategoryName.toUpperCase()}" berhasil ditambahkan`, type: 'success' });
+    }
+    setIsAddCategoryModalOpen(false);
+    setNewCategoryName('');
+  };
 
-  if (role && role !== 'ADMIN') {
+  // Upload state
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleFileUpload = (file: File, target: 'add' | 'edit') => {
+    if (!file.type.startsWith('image/')) {
+      setToast({ message: 'Hanya file gambar yang diperbolehkan', type: 'danger' });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      if (target === 'add') {
+        setNewProduct({ ...newProduct, image: result });
+      } else if (editingProduct) {
+        setEditingProduct({ ...editingProduct, image: result });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const DragDropZone = ({ image, target }: { image: string; target: 'add' | 'edit' }) => (
+    <div
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const file = e.dataTransfer.files[0];
+        if (file) handleFileUpload(file, target);
+      }}
+      className={`relative group h-40 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center gap-2 overflow-hidden
+        ${isDragging ? 'border-primary bg-primary/5 scale-[1.01]' : 'border-slate-200 bg-slate-50/50 hover:border-primary/40 hover:bg-slate-50'}`}
+    >
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFileUpload(file, target);
+        }}
+        className="absolute inset-0 opacity-0 cursor-pointer z-10"
+      />
+      {image ? (
+        <>
+          <Image src={image} alt="Preview" fill className="object-cover opacity-40 group-hover:opacity-20 transition-opacity" />
+          <div className="relative z-0 flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-primary mb-2 group-hover:scale-110 transition-transform">
+              <ImageIcon size={24} />
+            </div>
+            <p className="text-xs font-bold text-text-primary">Ganti Foto</p>
+            <p className="text-[10px] text-text-muted mt-0.5">Tarik & lepas atau klik</p>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-400 mb-2 group-hover:text-primary transition-colors">
+            <Plus size={24} />
+          </div>
+          <p className="text-sm font-bold text-text-primary">Upload Foto Produk</p>
+          <p className="text-xs text-text-muted">PNG, JPG atau WEBP (Maks. 2MB)</p>
+        </>
+      )}
+    </div>
+  );
+
+  if (role && !['ADMIN', 'MANAGER'].includes(role)) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center h-[60vh] animate-fade-in">
         <div className="w-20 h-20 rounded-2xl bg-red-50 flex items-center justify-center mb-6">
           <Lock size={32} className="text-danger" />
         </div>
         <h1 className="text-2xl font-bold text-text-primary">Akses Ditolak</h1>
-        <p className="text-sm text-text-muted mt-2 max-w-sm">Hanya Admin yang dapat mengelola Produk Master.</p>
+        <p className="text-sm text-text-muted mt-2 max-w-sm">Anda tidak memiliki akses ke halaman Produk Master.</p>
         <button onClick={() => router.push('/')} className="pro-button-primary mt-6">
           Kembali ke Dashboard
         </button>
@@ -138,132 +229,147 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Toast notification */}
-      {toast && (
-        <div className={`fixed top-4 right-4 z-[100] px-5 py-3 rounded-xl shadow-lg border animate-slide-in flex items-center gap-3 text-sm font-medium
-          ${toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
-          {toast.type === 'success' ? '✓' : '✕'} {toast.message}
-          <button onClick={() => setToast(null)} className="ml-2 opacity-50 hover:opacity-100">
-            <X size={14} />
-          </button>
-        </div>
-      )}
+    <>
+      <div className="space-y-6 animate-fade-in">
+        {/* Toast notification */}
+        {toast && (
+          <div className={`fixed top-4 right-4 z-[100] px-5 py-3 rounded-xl shadow-lg border animate-slide-in flex items-center gap-3 text-sm font-medium
+            ${toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+            {toast.type === 'success' ? '✓' : '✕'} {toast.message}
+            <button onClick={() => setToast(null)} className="ml-2 opacity-50 hover:opacity-100">
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight">Produk Master</h1>
-          <p className="text-sm text-text-muted mt-1">{products.length} produk terdaftar</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary tracking-tight">Produk Master</h1>
+            <p className="text-sm text-text-muted mt-1">{products.length} produk terdaftar</p>
+          </div>
+          {role === 'ADMIN' && (
+            <div className="flex gap-2">
+              <button onClick={() => setIsAddCategoryModalOpen(true)} className="pro-button-secondary bg-white text-text-primary border-slate-200 hover:border-primary">
+                <Plus size={16} /> Kategori
+              </button>
+              <button onClick={() => setIsAddModalOpen(true)} className="pro-button-primary">
+                <Plus size={16} /> Tambah Produk
+              </button>
+            </div>
+          )}
         </div>
-        <button onClick={() => setIsAddModalOpen(true)} className="pro-button-primary">
-          <Plus size={16} /> Tambah Produk
-        </button>
-      </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-          <input
-            type="text"
-            placeholder="Cari nama atau SKU produk..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pro-input pl-10"
-          />
-        </div>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="pro-select"
-        >
-          <option value="">Semua Kategori</option>
-          {categories.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-      </div>
+        <div className="pro-card">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
+              <input
+                type="text"
+                placeholder="Cari nama atau SKU produk..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pro-input pl-10"
+              />
+            </div>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="pro-select"
+            >
+              <option value="">Semua Kategori</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
 
-      <div className="pro-table-wrapper">
-        <table className="pro-table">
-          <thead>
-            <tr>
-              <th>Produk</th>
-              <th>SKU</th>
-              <th>Kategori</th>
-              <th>Harga</th>
-              <th>Stok Global</th>
-              <th className="text-center">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((prod) => (
-              <tr key={prod.id}>
-                <td>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-card-border shrink-0 relative">
-                      <Image
-                        src={prod.image}
-                        alt={prod.name}
-                        fill
-                        className="object-cover"
-                        sizes="48px"
-                      />
-                    </div>
-                    <span className="font-semibold text-text-primary">{prod.name}</span>
-                  </div>
-                </td>
-                <td>
-                  <span className="pro-badge-neutral font-mono">{prod.sku}</span>
-                </td>
-                <td>
-                  <span className={`pro-badge-info`}>{prod.category}</span>
-                </td>
-                <td className="font-semibold text-primary">Rp {prod.price.toLocaleString('id-ID')}</td>
-                <td>
-                  <span className={`font-semibold ${prod.stock <= 10 ? 'text-danger' : 'text-text-primary'}`}>
-                    {prod.stock}
-                    {prod.stock <= 10 && (
-                      <span className="ml-1.5 pro-badge-warning text-[10px]">Low</span>
-                    )}
-                  </span>
-                </td>
-                <td>
-                  <div className="flex justify-center gap-1">
-                    <button
-                      onClick={() => handleEditClick(prod)}
-                      className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors"
-                      title="Edit produk"
-                    >
-                      <Edit size={15} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(prod)}
-                      className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-red-50 transition-colors"
-                      title="Hapus produk"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {filtered.length === 0 && (
+          <div className="pro-table-wrapper">
+          <table className="pro-table">
+            <thead>
               <tr>
-                <td colSpan={6} className="text-center py-12">
-                  <div className="flex flex-col items-center">
-                    <Package size={32} className="text-text-muted mb-2" />
-                    <p className="text-text-muted font-medium">Tidak ada produk ditemukan</p>
-                  </div>
-                </td>
+                <th>Produk</th>
+                <th>SKU</th>
+                <th>Kategori</th>
+                <th>Harga</th>
+                <th>Stok</th>
+                {['ADMIN', 'MANAGER'].includes(role) && <th className="text-center">Aksi</th>}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.map((prod) => (
+                <tr key={prod.id}>
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-card-border shrink-0 relative">
+                        <Image
+                          src={prod.image}
+                          alt={prod.name}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                        />
+                      </div>
+                      <span className="font-semibold text-text-primary">{prod.name}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="pro-badge-neutral font-mono">{prod.sku}</span>
+                  </td>
+                  <td>
+                    <span className={`pro-badge-info`}>{prod.category}</span>
+                  </td>
+                  <td className="font-semibold text-primary">Rp {prod.price.toLocaleString('id-ID')}</td>
+                  <td>
+                    <span className={`font-semibold ${prod.stock <= 10 ? 'text-danger' : 'text-text-primary'}`}>
+                      {prod.stock}
+                      {prod.stock <= 10 && (
+                        <span className="ml-1.5 pro-badge-warning text-[10px]">Low</span>
+                      )}
+                    </span>
+                  </td>
+                  {['ADMIN', 'MANAGER'].includes(role) && (
+                    <td>
+                      <div className="flex justify-center gap-1">
+                        <button
+                          onClick={() => handleEditClick(prod)}
+                          className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors"
+                          title="Edit produk"
+                        >
+                          <Edit size={15} />
+                        </button>
+                        {role === 'ADMIN' && (
+                          <button
+                            onClick={() => handleDeleteClick(prod)}
+                            className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-red-50 transition-colors"
+                            title="Hapus produk"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="text-center py-12">
+                    <div className="flex flex-col items-center">
+                      <Package size={32} className="text-text-muted mb-2" />
+                      <p className="text-text-muted font-medium">Tidak ada produk ditemukan</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          </div>
+        </div>
       </div>
 
       {/* ===== EDIT MODAL ===== */}
       {isEditModalOpen && editingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-lg animate-scale-in overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-card-border">
               <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
@@ -278,78 +384,83 @@ export default function ProductsPage() {
             </div>
 
             <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
-              {/* Product image preview */}
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 border border-card-border relative shrink-0">
-                  <Image
-                    src={editingProduct.image}
-                    alt={editingProduct.name}
-                    fill
-                    className="object-cover"
-                    sizes="80px"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">Foto Produk</label>
-                  <select
-                    value={editingProduct.image}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                    className="pro-select w-full text-sm py-2"
-                  >
-                    {availableImages.map((img) => (
-                      <option key={img.value} value={img.value}>{img.label}</option>
-                    ))}
-                  </select>
-                </div>
+              {/* Product image upload zone */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-text-primary">Foto Produk</label>
+                <DragDropZone image={editingProduct.image} target="edit" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text-primary mb-2">SKU</label>
-                  <input
-                    type="text"
-                    value={editingProduct.sku}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, sku: e.target.value.toUpperCase() })}
-                    className="pro-input font-mono"
-                    required
-                  />
+                  {role === 'MANAGER' ? (
+                    <div className="w-full text-sm py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-mono">
+                      {editingProduct.sku}
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={editingProduct.sku}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, sku: e.target.value.toUpperCase() })}
+                      className="pro-input font-mono"
+                      required
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-primary mb-2">Kategori</label>
-                  <select
-                    value={editingProduct.category}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                    className="pro-select w-full"
-                  >
-                    {categories.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
+                  {role === 'MANAGER' ? (
+                    <div className="w-full text-sm py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium">
+                      {editingProduct.category}
+                    </div>
+                  ) : (
+                    <select
+                      value={editingProduct.category}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                      className="pro-select w-full"
+                    >
+                      {categories.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-2">Nama Produk</label>
-                <input
-                  type="text"
-                  value={editingProduct.name}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                  className="pro-input"
-                  required
-                />
+                {role === 'MANAGER' ? (
+                  <div className="w-full text-sm py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium">
+                    {editingProduct.name}
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={editingProduct.name}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                    className="pro-input"
+                    required
+                  />
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text-primary mb-2">Harga (Rp)</label>
-                  <input
-                    type="number"
-                    value={editingProduct.price}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
-                    className="pro-input"
-                    required
-                    min={0}
-                  />
+                  {role === 'MANAGER' ? (
+                    <div className="w-full text-sm py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium">
+                      Rp {editingProduct.price.toLocaleString('id-ID')}
+                    </div>
+                  ) : (
+                    <input
+                      type="number"
+                      value={editingProduct.price}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
+                      className="pro-input"
+                      required
+                      min={0}
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-primary mb-2">Stok Global</label>
@@ -379,7 +490,7 @@ export default function ProductsPage() {
 
       {/* ===== DELETE CONFIRMATION MODAL ===== */}
       {isDeleteModalOpen && deletingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-md animate-scale-in overflow-hidden">
             <div className="p-6 text-center">
               <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
@@ -427,7 +538,7 @@ export default function ProductsPage() {
 
       {/* ===== ADD PRODUCT MODAL ===== */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-lg animate-scale-in overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-card-border">
               <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
@@ -442,22 +553,10 @@ export default function ProductsPage() {
             </div>
 
             <form onSubmit={handleAddProduct} className="p-6 space-y-4">
-              {/* Image selector */}
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">Foto Produk</label>
-                <div className="grid grid-cols-6 gap-2">
-                  {availableImages.map((img) => (
-                    <button
-                      key={img.value}
-                      type="button"
-                      onClick={() => setNewProduct({ ...newProduct, image: img.value })}
-                      className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all
-                        ${newProduct.image === img.value ? 'border-primary ring-2 ring-primary/20 scale-105' : 'border-card-border hover:border-slate-300'}`}
-                    >
-                      <Image src={img.value} alt={img.label} fill className="object-cover" sizes="64px" />
-                    </button>
-                  ))}
-                </div>
+              {/* Product image upload zone */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-text-primary">Foto Produk</label>
+                <DragDropZone image={newProduct.image} target="add" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -537,6 +636,47 @@ export default function ProductsPage() {
           </div>
         </div>
       )}
-    </div>
+
+      {/* ===== ADD CATEGORY MODAL ===== */}
+      {isAddCategoryModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+          <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-sm animate-scale-in overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-card-border">
+              <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+                <Plus size={18} className="text-primary" /> Kategori Baru
+              </h2>
+              <button
+                onClick={() => setIsAddCategoryModalOpen(false)}
+                className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-slate-100 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleAddCategory} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">Nama Kategori</label>
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Contoh: PAKET HEMAT"
+                  className="pro-input"
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-3 pt-4 border-t border-card-border">
+                <button type="button" onClick={() => setIsAddCategoryModalOpen(false)} className="pro-button-secondary flex-1">
+                  Batal
+                </button>
+                <button type="submit" className="pro-button-primary flex-1">
+                  Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -19,9 +19,9 @@ const initialUsers: UserData[] = [
 ];
 
 const roleConfig = {
-  ADMIN: { color: 'bg-purple-50 text-purple-700', gradient: 'from-purple-500 to-indigo-600', dotColor: 'bg-purple-500' },
-  MANAGER: { color: 'bg-blue-50 text-blue-700', gradient: 'from-blue-500 to-cyan-600', dotColor: 'bg-blue-500' },
-  KASIR: { color: 'bg-emerald-50 text-emerald-700', gradient: 'from-emerald-500 to-teal-600', dotColor: 'bg-emerald-500' },
+  ADMIN: { color: 'bg-purple-50 text-purple-700', bg: 'bg-purple-500', dotColor: 'bg-purple-500' },
+  MANAGER: { color: 'bg-blue-50 text-blue-700', bg: 'bg-blue-500', dotColor: 'bg-blue-500' },
+  KASIR: { color: 'bg-emerald-50 text-emerald-700', bg: 'bg-emerald-500', dotColor: 'bg-emerald-500' },
 };
 
 export default function UsersPage() {
@@ -76,115 +76,119 @@ export default function UsersPage() {
     .filter((u) => (branchFilter ? u.branch === branchFilter : true));
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight">Pegawai & Hak Akses</h1>
-          <p className="text-sm text-text-muted mt-1">{users.length} pegawai terdaftar</p>
+    <>
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary tracking-tight">Pegawai & Hak Akses</h1>
+            <p className="text-sm text-text-muted mt-1">{users.length} pegawai terdaftar</p>
+          </div>
+          <button className="pro-button-primary">
+            <UserPlus size={16} /> Pegawai Baru
+          </button>
         </div>
-        <button className="pro-button-primary">
-          <UserPlus size={16} /> Pegawai Baru
-        </button>
-      </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-          <input
-            type="text"
-            placeholder="Cari nama pegawai..."
-            value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
-            className="pro-input pl-10"
-          />
+        <div className="pro-card">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
+              <input
+                type="text"
+                placeholder="Cari nama pegawai..."
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                className="pro-input pl-10"
+              />
+            </div>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="pro-select"
+            >
+              <option value="">Semua Role</option>
+              <option value="ADMIN">Admin</option>
+              <option value="MANAGER">Manager</option>
+              <option value="KASIR">Kasir</option>
+            </select>
+            <select
+              value={branchFilter}
+              onChange={(e) => setBranchFilter(e.target.value)}
+              className="pro-select"
+            >
+              <option value="">Semua Cabang</option>
+              <option value="pusat">Pusat</option>
+              <option value="depok">Depok</option>
+            </select>
+          </div>
         </div>
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="pro-select"
-        >
-          <option value="">Semua Role</option>
-          <option value="ADMIN">Admin</option>
-          <option value="MANAGER">Manager</option>
-          <option value="KASIR">Kasir</option>
-        </select>
-        <select
-          value={branchFilter}
-          onChange={(e) => setBranchFilter(e.target.value)}
-          className="pro-select"
-        >
-          <option value="">Semua Cabang</option>
-          <option value="pusat">Pusat</option>
-          <option value="depok">Depok</option>
-        </select>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredUsers.map((user) => {
-          const config = roleConfig[user.role];
-          return (
-            <div key={user.id} className="pro-card-elevated p-0 overflow-hidden flex flex-col">
-              {/* Header gradient based on role */}
-              <div className={`h-2 bg-gradient-to-r ${config.gradient}`} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredUsers.map((user) => {
+            const config = roleConfig[user.role];
+            return (
+              <div key={user.id} className="pro-card-elevated p-0 overflow-hidden flex flex-col">
+                {/* Header color based on role */}
+                <div className={`h-2 ${config.bg}`} />
 
-              <div className="p-5 flex-1 flex flex-col">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${config.gradient} flex items-center justify-center text-sm font-bold text-white shrink-0`}>
-                    {user.name.substring(0, 2).toUpperCase()}
+                <div className="p-5 flex-1 flex flex-col">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className={`w-11 h-11 rounded-xl ${config.bg} flex items-center justify-center text-sm font-bold text-white shrink-0`}>
+                      {user.name.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base font-semibold text-text-primary truncate">{user.name}</h3>
+                      <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
+                        <MapPin size={11} /> {user.branch === 'pusat' ? 'Semua Cabang (Pusat)' : `Cabang ${user.branch}`}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-base font-semibold text-text-primary truncate">{user.name}</h3>
-                    <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
-                      <MapPin size={11} /> {user.branch === 'pusat' ? 'Semua Cabang (Pusat)' : `Cabang ${user.branch}`}
-                    </p>
+
+                  <div className="mb-4">
+                    <span className={`pro-badge ${config.color} flex items-center gap-1.5 w-fit`}>
+                      <Shield size={11} /> {user.role}
+                    </span>
                   </div>
-                </div>
 
-                <div className="mb-4">
-                  <span className={`pro-badge ${config.color} flex items-center gap-1.5 w-fit`}>
-                    <Shield size={11} /> {user.role}
-                  </span>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-2 pt-3 border-t border-card-border mt-auto">
-                  {user.role !== 'ADMIN' && (
-                    <select
-                      className="pro-select w-full text-xs py-2"
-                      value={user.role}
-                      onChange={(e) => {
-                        const updatedUsers = users.map((u) => (u.id === user.id ? { ...u, role: e.target.value as UserData['role'] } : u));
-                        setUsers(updatedUsers);
-                      }}
+                  {/* Actions */}
+                  <div className="space-y-2 pt-3 border-t border-card-border mt-auto">
+                    {user.role !== 'ADMIN' && (
+                      <select
+                        className="pro-select w-full text-xs py-2"
+                        value={user.role}
+                        onChange={(e) => {
+                          const updatedUsers = users.map((u) => (u.id === user.id ? { ...u, role: e.target.value as UserData['role'] } : u));
+                          setUsers(updatedUsers);
+                        }}
+                      >
+                        <option value="MANAGER">Manager</option>
+                        <option value="KASIR">Kasir</option>
+                        <option value="ADMIN">Jadikan Admin</option>
+                      </select>
+                    )}
+                    <button
+                      onClick={() => handleEditClick(user)}
+                      className="pro-button-secondary w-full text-xs py-2"
                     >
-                      <option value="MANAGER">Manager</option>
-                      <option value="KASIR">Kasir</option>
-                      <option value="ADMIN">Jadikan Admin</option>
-                    </select>
-                  )}
-                  <button
-                    onClick={() => handleEditClick(user)}
-                    className="pro-button-secondary w-full text-xs py-2"
-                  >
-                    <Edit size={13} /> Edit {user.role === 'ADMIN' ? 'Akun' : 'Detail'}
-                  </button>
+                      <Edit size={13} /> Edit {user.role === 'ADMIN' ? 'Akun' : 'Detail'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
-        {filteredUsers.length === 0 && (
-          <div className="col-span-full py-16 text-center">
-            <UsersIcon size={32} className="mx-auto text-text-muted mb-2" />
-            <p className="text-text-muted font-medium">Tidak ada pegawai ditemukan</p>
-          </div>
-        )}
+          {filteredUsers.length === 0 && (
+            <div className="col-span-full py-16 text-center">
+              <UsersIcon size={32} className="mx-auto text-text-muted mb-2" />
+              <p className="text-text-muted font-medium">Tidak ada pegawai ditemukan</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal Edit */}
       {isEditModalOpen && editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-lg animate-scale-in overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-card-border">
               <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
@@ -252,6 +256,6 @@ export default function UsersPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

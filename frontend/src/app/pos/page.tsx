@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, Plus, Minus, Trash2, LogOut, ShoppingCart, Receipt } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Minus, Trash2, LogOut, ShoppingCart, Receipt, Store, Users, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 
 interface Product {
@@ -31,9 +31,17 @@ const initialProducts: Product[] = [
 
 export default function PosPage() {
   const router = useRouter();
+  const [products, setProducts] = useState<Product[]>(initialProducts);
   const [userName, setUserName] = useState<string>('Kasir');
   const [userRole, setUserRole] = useState<string>('');
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [profileOpen, setProfileOpen] = useState<boolean>(false);
+  
+  // Receipt state
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [lastTransaction, setLastTransaction] = useState<{ items: CartItem[]; total: number; date: string; id: string } | null>(null);
+
+  const [categories, setCategories] = useState(['SEMUA', 'MAKANAN', 'MINUMAN', 'SNACK']);
 
   useEffect(() => {
     const role = localStorage.getItem('pos_role');
@@ -43,6 +51,18 @@ export default function PosPage() {
     } else {
       setUserRole(role);
       setUserName(name || role);
+    }
+
+    // Load products from localStorage
+    const savedProducts = localStorage.getItem('pos_products');
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts));
+    }
+    
+    // Load categories from localStorage
+    const savedCategories = localStorage.getItem('pos_categories');
+    if (savedCategories) {
+      setCategories(['SEMUA', ...JSON.parse(savedCategories)]);
     }
   }, [router]);
 
@@ -55,13 +75,22 @@ export default function PosPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('SEMUA');
 
-  const filteredProducts = initialProducts.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || product.sku.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'SEMUA' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const addToCart = (product: Product) => {
+    // Check if stock is available
+    const existingInCart = cart.find(item => item.id === product.id);
+    const quantityInCart = existingInCart ? existingInCart.quantity : 0;
+    
+    if (product.stock <= quantityInCart) {
+      alert(`Stok produk "${product.name}" habis!`);
+      return;
+    }
+
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
@@ -76,6 +105,13 @@ export default function PosPage() {
       return prevCart.map((item) => {
         if (item.id === id) {
           const newQuantity = item.quantity + delta;
+          
+          // Check stock when increasing
+          if (delta > 0 && item.stock <= item.quantity) {
+            alert(`Stok produk "${item.name}" tidak mencukupi!`);
+            return item;
+          }
+          
           return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
         }
         return item;
@@ -89,7 +125,32 @@ export default function PosPage() {
 
   const handleCheckout = () => {
     if (cart.length === 0) return alert('Keranjang kosong!');
-    alert(`Pembayaran sebesar Rp ${Math.round(total).toLocaleString('id-ID')} berhasil diproses!`);
+    
+    // 1. Prepare transaction data for receipt
+    const transactionId = `TRX-${Date.now().toString().slice(-6)}`;
+    const transactionDate = new Date().toLocaleString('id-ID');
+    setLastTransaction({
+      id: transactionId,
+      date: transactionDate,
+      items: [...cart],
+      total: total
+    });
+
+    // 2. Update stock in localStorage
+    const currentProducts: Product[] = JSON.parse(localStorage.getItem('pos_products') || '[]');
+    const updatedProducts = currentProducts.map(p => {
+      const cartItem = cart.find(item => item.id === p.id);
+      if (cartItem) {
+        return { ...p, stock: Math.max(0, p.stock - cartItem.quantity) };
+      }
+      return p;
+    });
+
+    localStorage.setItem('pos_products', JSON.stringify(updatedProducts));
+    setProducts(updatedProducts); // Update local state for immediate feedback
+    
+    // 3. Open receipt modal
+    setIsReceiptModalOpen(true);
     setCart([]);
   };
 
@@ -97,8 +158,6 @@ export default function PosPage() {
   const tax = subtotal * 0.11;
   const total = subtotal + tax;
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  const categories = ['SEMUA', 'MAKANAN', 'MINUMAN', 'SNACK'];
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
@@ -117,7 +176,7 @@ export default function PosPage() {
           )}
           <div className="flex-1">
             <h2 className="text-base font-semibold text-text-primary">Transaksi</h2>
-            <p className="text-xs text-text-muted">Kasir: {userName} • Pusat</p>
+            <p className="text-xs text-text-muted">Kasir: {userName} • {userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok'}</p>
           </div>
           <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg">
             <ShoppingCart size={14} className="text-text-muted" />
@@ -206,33 +265,89 @@ export default function PosPage() {
 
       {/* Right: Product Grid */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Search & Filter */}
-        <div className="px-6 py-4 bg-white border-b border-card-border">
-          <div className="relative mb-3">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Scan barcode atau cari nama produk..."
-              className="pro-input pl-10 py-3 text-base"
-            />
+        {/* Top Header: Search, Filter & Profile */}
+        <div className="px-6 py-4 bg-white/80 backdrop-blur-xl border-b border-card-border flex flex-col md:flex-row md:items-center justify-between gap-4 z-20 shadow-sm relative">
+          
+          {/* Search & Filter */}
+          <div className="flex-1 flex flex-col gap-3 min-w-0">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Scan barcode atau cari nama produk..."
+                className="pro-input pl-10 py-2.5 text-sm"
+              />
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300
+                    ${selectedCategory === cat
+                      ? 'bg-primary text-white shadow-md shadow-primary/20'
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'
+                    }`}
+                >
+                  {cat.charAt(0) + cat.slice(1).toLowerCase()}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200
-                  ${selectedCategory === cat
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'bg-slate-100 text-text-secondary hover:bg-slate-200'
-                  }`}
-              >
-                {cat.charAt(0) + cat.slice(1).toLowerCase()}
-              </button>
-            ))}
+          {/* Profile Dropdown */}
+          <div className="relative shrink-0 self-start md:self-center">
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200"
+            >
+              <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-sm font-bold text-white shadow-inner">
+                {userName?.substring(0, 2).toUpperCase() || 'AD'}
+              </div>
+              <div className="hidden sm:block text-left">
+                <p className="text-sm font-bold text-text-primary leading-tight">{userName}</p>
+                <p className="text-[10px] text-primary font-bold uppercase tracking-wider">{userRole}</p>
+              </div>
+              <ChevronDown size={16} className={`text-slate-400 hidden sm:block transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {profileOpen && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setProfileOpen(false)} />
+                <div className="absolute right-0 top-14 w-56 bg-white/90 backdrop-blur-xl rounded-2xl border border-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] py-2 z-40 animate-scale-in">
+                  <div className="px-4 py-3 border-b border-slate-100 mb-1">
+                    <p className="text-sm font-bold text-text-primary">{userName}</p>
+                    <p className="text-xs text-primary font-bold tracking-wider uppercase mb-2">{userRole}</p>
+                    <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-500 bg-slate-100/80 p-2 rounded-lg border border-white shadow-inner">
+                      <Store size={12} className="text-primary" />
+                      <span>{userRole === 'ADMIN' ? 'Semua Cabang (Pusat)' : 'Cabang Depok'}</span>
+                    </div>
+                  </div>
+                  
+                  {userRole === 'ADMIN' && (
+                    <>
+                      <Link
+                        href="/users"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors"
+                      >
+                        <Users size={16} /> Tambah Akun
+                      </Link>
+                      <div className="mx-4 my-1 border-t border-slate-100" />
+                    </>
+                  )}
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                  >
+                    <LogOut size={16} /> Keluar Aplikasi
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -270,6 +385,80 @@ export default function PosPage() {
           </div>
         </div>
       </div>
+
+      {/* ===== RECEIPT MODAL ===== */}
+      {isReceiptModalOpen && lastTransaction && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-scale-in overflow-hidden flex flex-col">
+            <div className="p-6 text-center border-b border-dashed border-slate-200">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-3">
+                <Receipt size={32} className="text-emerald-500" />
+              </div>
+              <h2 className="text-xl font-bold text-text-primary uppercase tracking-wider">Pembayaran Berhasil</h2>
+              <p className="text-sm text-text-muted mt-1">ID: {lastTransaction.id}</p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 max-h-[60vh]">
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-black text-text-primary tracking-tighter">ZEN POS</h3>
+                <p className="text-[10px] text-text-muted uppercase font-bold tracking-widest">Modern Multi-Location POS</p>
+                <div className="h-px bg-slate-100 my-4" />
+                <p className="text-[10px] text-text-secondary font-mono">{lastTransaction.date}</p>
+              </div>
+
+              <div className="space-y-3">
+                {lastTransaction.items.map((item) => (
+                  <div key={item.id} className="flex justify-between text-xs font-mono">
+                    <div className="flex-1 pr-4">
+                      <p className="text-text-primary font-bold">{item.name}</p>
+                      <p className="text-text-muted">{item.quantity} x Rp {item.price.toLocaleString('id-ID')}</p>
+                    </div>
+                    <span className="text-text-primary font-bold">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-dashed border-slate-200 pt-4 space-y-2">
+                <div className="flex justify-between text-xs font-mono">
+                  <span className="text-text-muted">Subtotal</span>
+                  <span className="text-text-primary">Rp {(lastTransaction.total / 1.11).toLocaleString('id-ID', { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between text-xs font-mono">
+                  <span className="text-text-muted">PPN (11%)</span>
+                  <span className="text-text-primary">Rp {(lastTransaction.total - lastTransaction.total / 1.11).toLocaleString('id-ID', { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between text-sm font-bold font-mono pt-2 border-t border-slate-100">
+                  <span className="text-text-primary">TOTAL</span>
+                  <span className="text-primary text-base">Rp {Math.round(lastTransaction.total).toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+
+              <div className="text-center pt-6 pb-2">
+                <p className="text-[10px] text-text-muted italic">Terima kasih atas kunjungan Anda</p>
+                <p className="text-[10px] text-text-muted font-bold mt-1">SIMPAN STRUK INI SEBAGAI BUKTI</p>
+              </div>
+            </div>
+
+            <div className="p-6 bg-slate-50 flex gap-3">
+              <button
+                onClick={() => setIsReceiptModalOpen(false)}
+                className="pro-button-secondary flex-1"
+              >
+                Tutup
+              </button>
+              <button
+                onClick={() => {
+                  window.print();
+                  setIsReceiptModalOpen(false);
+                }}
+                className="pro-button-primary flex-1"
+              >
+                Cetak Struk
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

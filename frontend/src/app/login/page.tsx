@@ -39,7 +39,7 @@ export default function LoginPage() {
       label: 'Admin',
       sublabel: 'Akses penuh ke semua fitur, pengaturan, dan master data.',
       icon: ShieldCheck,
-      gradient: 'from-indigo-500 to-purple-600',
+      bgColor: 'bg-indigo-500',
       bg: 'bg-indigo-50 hover:bg-indigo-100',
       iconColor: 'text-indigo-600',
     },
@@ -49,7 +49,7 @@ export default function LoginPage() {
       label: 'Manager',
       sublabel: 'Akses laporan, mutasi stok, dan dashboard.',
       icon: BarChart3,
-      gradient: 'from-emerald-500 to-teal-600',
+      bgColor: 'bg-emerald-500',
       bg: 'bg-emerald-50 hover:bg-emerald-100',
       iconColor: 'text-emerald-600',
     },
@@ -59,7 +59,7 @@ export default function LoginPage() {
       label: 'Kasir',
       sublabel: 'Fokus pada halaman POS untuk transaksi.',
       icon: ShoppingCart,
-      gradient: 'from-amber-500 to-orange-600',
+      bgColor: 'bg-amber-500',
       bg: 'bg-amber-50 hover:bg-amber-100',
       iconColor: 'text-amber-600',
     },
@@ -73,7 +73,7 @@ export default function LoginPage() {
           {/* Brand */}
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-indigo-400 flex items-center justify-center shadow-lg shadow-primary/25">
+              <div className="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
                 <ShoppingCart size={20} className="text-white" />
               </div>
               <div>
@@ -129,10 +129,10 @@ export default function LoginPage() {
       </div>
 
       {/* Right: Quick Login */}
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex w-1/2 bg-slate-900 items-center justify-center p-12 relative overflow-hidden">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-primary/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-indigo-600/15 to-transparent rounded-full translate-y-1/3 -translate-x-1/4 blur-3xl" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full translate-y-1/3 -translate-x-1/4 blur-3xl" />
 
         <div className="w-full max-w-md relative z-10 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <div className="flex items-center gap-2 mb-2">
@@ -151,7 +151,7 @@ export default function LoginPage() {
                 className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm
                          hover:bg-white/[0.1] hover:border-white/[0.15] transition-all duration-300 group text-left disabled:opacity-50"
               >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg shrink-0`}>
+                <div className={`w-12 h-12 rounded-xl ${card.bgColor} flex items-center justify-center shadow-lg shrink-0`}>
                   <card.icon size={22} className="text-white" />
                 </div>
                 <div className="flex-1 min-w-0">

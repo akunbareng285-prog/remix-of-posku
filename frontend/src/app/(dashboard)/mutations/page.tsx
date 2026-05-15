@@ -26,25 +26,26 @@ export default function MutationsPage() {
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-          <input
-            type="text"
-            placeholder="Cari ID mutasi atau nama produk..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pro-input pl-10"
-          />
+      <div className="pro-card">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
+            <input
+              type="text"
+              placeholder="Cari ID mutasi atau nama produk..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pro-input pl-10"
+            />
+          </div>
+          <select className="pro-select">
+            <option>Semua Status</option>
+            <option>Proses</option>
+            <option>Selesai</option>
+          </select>
         </div>
-        <select className="pro-select">
-          <option>Semua Status</option>
-          <option>Proses</option>
-          <option>Selesai</option>
-        </select>
-      </div>
 
-      <div className="pro-table-wrapper">
+        <div className="pro-table-wrapper">
         <table className="pro-table">
           <thead>
             <tr>
@@ -95,6 +96,7 @@ export default function MutationsPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
