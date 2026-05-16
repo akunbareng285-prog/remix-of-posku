@@ -1,8 +1,50 @@
 'use client';
 
 import { DollarSign, ShoppingBag, TrendingUp, Download, BarChart3 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function ReportsPage() {
+  const [data, setData] = useState({
+    totalRevenue: 0,
+    totalTransactions: 0,
+    topProduct: { name: 'Belum ada', qty: 0 },
+    chartData: [] as any[],
+    productDetails: [] as any[]
+  });
+
+  useEffect(() => {
+    const transactions = JSON.parse(localStorage.getItem('pos_transactions') || '[]');
+    
+    // 1. Basic Stats
+    const totalRev = transactions.reduce((sum: number, t: any) => sum + t.total, 0);
+    
+    // 2. Product Sales for Top Product & Details
+    const productSales: Record<string, { count: number; category: string; revenue: number }> = {};
+    transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (!productSales[item.name]) {
+          productSales[item.name] = { count: 0, category: item.category, revenue: 0 };
+        }
+        productSales[item.name].count += item.quantity;
+        productSales[item.name].revenue += (item.price * item.quantity);
+      });
+    });
+
+    const sortedProds = Object.entries(productSales)
+      .map(([name, d]) => ({ name, cat: d.category, qty: d.count, rev: d.revenue }))
+      .sort((a, b) => b.qty - a.qty);
+
+    const top = sortedProds[0] || { name: 'Belum ada', qty: 0 };
+
+    setData({
+      totalRevenue: totalRev,
+      totalTransactions: transactions.length,
+      topProduct: top,
+      chartData: [], // Would need complex date grouping logic
+      productDetails: sortedProds.slice(0, 8)
+    });
+  }, []);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -23,8 +65,8 @@ export default function ReportsPage() {
               <DollarSign size={18} />
             </div>
           </div>
-          <p className="text-3xl font-black text-text-primary tracking-tighter">Rp 45.200.000</p>
-          <p className="text-[11px] text-text-muted font-black mt-3 uppercase tracking-widest opacity-70">Bulan ini</p>
+          <p className="text-3xl font-black text-text-primary tracking-tighter">Rp {data.totalRevenue.toLocaleString('id-ID')}</p>
+          <p className="text-[11px] text-text-muted font-black mt-3 uppercase tracking-widest opacity-70">Semua Waktu</p>
         </div>
 
         <div className="pro-stat-card before:bg-amber-500 group relative overflow-hidden">
@@ -34,8 +76,8 @@ export default function ReportsPage() {
               <ShoppingBag size={18} />
             </div>
           </div>
-          <p className="text-3xl font-black text-text-primary tracking-tighter">1.432</p>
-          <p className="text-[11px] text-text-muted font-black mt-3 uppercase tracking-widest opacity-70">Order bulan ini</p>
+          <p className="text-3xl font-black text-text-primary tracking-tighter">{data.totalTransactions}</p>
+          <p className="text-[11px] text-text-muted font-black mt-3 uppercase tracking-widest opacity-70">Order Berhasil</p>
         </div>
 
         <div className="pro-stat-card before:bg-orange-600 group relative overflow-hidden">
@@ -45,8 +87,8 @@ export default function ReportsPage() {
               <BarChart3 size={18} />
             </div>
           </div>
-          <p className="text-xl font-black text-text-primary tracking-tight truncate">Kopi Kenangan Mantan</p>
-          <p className="text-[11px] text-text-muted font-black mt-3 uppercase tracking-widest opacity-70">348 unit terjual</p>
+          <p className="text-xl font-black text-text-primary tracking-tight truncate">{data.topProduct.name}</p>
+          <p className="text-[11px] text-text-muted font-black mt-3 uppercase tracking-widest opacity-70">{data.topProduct.qty} unit terjual</p>
         </div>
       </div>
 
@@ -118,31 +160,29 @@ export default function ReportsPage() {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {[
-                  { name: 'Kopi Kenangan Mantan', cat: 'Minuman', qty: 348, rev: 'Rp 6.9jt', pct: 45 },
-                  { name: 'Roti Bakar Coklat', cat: 'Makanan', qty: 156, rev: 'Rp 3.1jt', pct: 20 },
-                  { name: 'Es Teh Manis', cat: 'Minuman', qty: 212, rev: 'Rp 1.0jt', pct: 15 },
-                  { name: 'Indomie Telur Kornet', cat: 'Makanan', qty: 85, rev: 'Rp 1.7jt', pct: 10 },
-                  { name: 'Nasi Goreng Spesial', cat: 'Makanan', qty: 64, rev: 'Rp 2.2jt', pct: 10 },
-                  { name: 'Pisang Goreng Madu', cat: 'Cemilan', qty: 58, rev: 'Rp 1.2jt', pct: 8 },
-                  { name: 'Thai Tea Large', cat: 'Minuman', qty: 42, rev: 'Rp 1.1jt', pct: 7 },
-                  { name: 'Ayam Geprek Juara', cat: 'Makanan', qty: 35, rev: 'Rp 1.4jt', pct: 5 },
-                ].map((item, i) => (
-                  <tr key={i} className="border-b border-slate-50 last:border-0 hover:bg-orange-50/30 transition-all group">
-                    <td className="py-4.5 pl-2 font-black text-text-primary group-hover:text-orange-600 transition-colors">{item.name}</td>
-                    <td className="py-4.5 text-[11px] text-text-muted font-black uppercase tracking-widest opacity-60">{item.cat}</td>
-                    <td className="py-4.5 text-right text-orange-600 font-black">{item.qty}</td>
-                    <td className="py-4.5 text-right text-text-secondary font-bold text-xs">{item.rev}</td>
-                    <td className="py-4.5 pr-2 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <span className="text-[10px] font-black text-text-muted w-8">{item.pct}%</span>
-                        <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                          <div className="h-full bg-orange-500 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.4)]" style={{ width: `${item.pct}%` }}></div>
+                {data.productDetails.length > 0 ? data.productDetails.map((item, i) => {
+                  const pct = data.totalRevenue > 0 ? Math.round((item.rev / data.totalRevenue) * 100) : 0;
+                  return (
+                    <tr key={i} className="border-b border-slate-50 last:border-0 hover:bg-orange-50/30 transition-all group">
+                      <td className="py-4.5 pl-2 font-black text-text-primary group-hover:text-orange-600 transition-colors">{item.name}</td>
+                      <td className="py-4.5 text-[11px] text-text-muted font-black uppercase tracking-widest opacity-60">{item.cat}</td>
+                      <td className="py-4.5 text-right text-orange-600 font-black">{item.qty}</td>
+                      <td className="py-4.5 text-right text-text-secondary font-bold text-xs">Rp {item.rev.toLocaleString('id-ID')}</td>
+                      <td className="py-4.5 pr-2 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <span className="text-[10px] font-black text-text-muted w-8">{pct}%</span>
+                          <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-full bg-orange-500 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.4)]" style={{ width: `${pct}%` }}></div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
+                    </tr>
+                  );
+                }) : (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-text-muted font-medium">Belum ada data penjualan produk</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

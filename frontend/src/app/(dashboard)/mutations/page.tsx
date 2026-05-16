@@ -1,18 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, ArrowRight, Plus, PackageSearch } from 'lucide-react';
-
-const mockMutations = [
-  { id: 'MUT-001', date: '2026-05-12', product: 'Kopi Kenangan Mantan', qty: 10, from: 'Gudang Pusat', to: 'Cabang Sudirman', status: 'Selesai' },
-  { id: 'MUT-002', date: '2026-05-11', product: 'Roti Coklat', qty: 5, from: 'Gudang Pusat', to: 'Cabang Thamrin', status: 'Proses' },
-  { id: 'MUT-003', date: '2026-05-10', product: 'Keripik Kentang', qty: 20, from: 'Cabang Sudirman', to: 'Cabang Thamrin', status: 'Selesai' },
-];
 
 export default function MutationsPage() {
   const [search, setSearch] = useState('');
+  const [mutations, setMutations] = useState<any[]>([]);
 
-  const filtered = mockMutations.filter((m) => m.product.toLowerCase().includes(search.toLowerCase()) || m.id.toLowerCase().includes(search.toLowerCase()));
+  useEffect(() => {
+    const savedMutations = JSON.parse(localStorage.getItem('pos_mutations') || '[]');
+    setMutations(savedMutations);
+  }, []);
+
+  const filtered = mutations.filter((m) => m.product.toLowerCase().includes(search.toLowerCase()) || m.id.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="space-y-6 animate-fade-in">

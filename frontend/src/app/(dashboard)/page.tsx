@@ -11,10 +11,60 @@ import { useEffect, useState } from 'react';
 
 export default function DashboardHome() {
   const [role, setRole] = useState<string>('');
+  const [stats, setStats] = useState({
+    todaySales: 0,
+    totalTransactions: 0,
+    lowStockCount: 0,
+    latestActivities: [] as any[],
+    topProducts: [] as any[]
+  });
 
   useEffect(() => {
     const savedRole = localStorage.getItem('pos_role');
     setRole(savedRole || '');
+
+    // 1. Get Products for Low Stock
+    const products = JSON.parse(localStorage.getItem('pos_products') || '[]');
+    const lowStock = products.filter((p: any) => p.stock <= 10).length;
+
+    // 2. Get Transactions for Sales & Top Products
+    const transactions = JSON.parse(localStorage.getItem('pos_transactions') || '[]');
+    const today = new Date().toLocaleDateString('id-ID');
+    
+    const todayTrans = transactions.filter((t: any) => t.date.includes(today.split(' ')[0])); // Simple today check
+    const todaySalesTotal = todayTrans.reduce((sum: number, t: any) => sum + t.total, 0);
+
+    // 3. Top Products calculation
+    const productSales: Record<string, { count: number; category: string }> = {};
+    transactions.forEach((t: any) => {
+      t.items.forEach((item: any) => {
+        if (!productSales[item.name]) {
+          productSales[item.name] = { count: 0, category: item.category };
+        }
+        productSales[item.name].count += item.quantity;
+      });
+    });
+
+    const topProds = Object.entries(productSales)
+      .map(([name, data]) => ({ name, sales: data.count, category: data.category }))
+      .sort((a, b) => b.sales - a.sales)
+      .slice(0, 5);
+
+    // 4. Latest Activities from Mutations
+    const mutations = JSON.parse(localStorage.getItem('pos_mutations') || '[]');
+    const latest = mutations.slice(0, 4).map((m: any) => ({
+      text: m.type === 'sale' ? `Penjualan: ${m.product} (${m.qty})` : m.text,
+      time: 'Baru saja',
+      type: m.type
+    }));
+
+    setStats({
+      todaySales: todaySalesTotal,
+      totalTransactions: todayTrans.length,
+      lowStockCount: lowStock,
+      latestActivities: latest,
+      topProducts: topProds
+    });
   }, []);
 
   const isAdmin = role === 'ADMIN';
@@ -44,7 +94,7 @@ export default function DashboardHome() {
               </div>
             </div>
             <div className="relative z-10">
-              <p className="text-3xl font-black text-text-primary tracking-tighter">{isAdmin ? 'Rp 12.850.000' : 'Rp 4.250.000'}</p>
+              <p className="text-3xl font-black text-text-primary tracking-tighter">Rp {stats.todaySales.toLocaleString('id-ID')}</p>
               <div className="flex items-center gap-2 mt-5">
                 <span className="px-2.5 py-1 rounded-xl bg-orange-50 text-orange-600 text-[11px] font-black flex items-center gap-1 border border-orange-100/50">
                   <ArrowUpRight size={14} /> +12.5%
@@ -64,7 +114,7 @@ export default function DashboardHome() {
             </div>
             <div className="relative z-10">
               <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-black text-text-primary tracking-tighter">{isAdmin ? '158' : '42'}</p>
+                <p className="text-4xl font-black text-text-primary tracking-tighter">{stats.totalTransactions}</p>
                 <span className="text-sm font-black text-text-muted uppercase tracking-widest opacity-60">transaksi</span>
               </div>
               <div className="flex items-center gap-2 mt-5">
@@ -86,7 +136,7 @@ export default function DashboardHome() {
             </div>
             <div className="relative z-10">
               <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-black text-text-primary tracking-tighter">{isAdmin ? '12' : '5'}</p>
+                <p className="text-4xl font-black text-text-primary tracking-tighter">{stats.lowStockCount}</p>
                 <span className="text-sm font-black text-text-muted uppercase tracking-widest opacity-60">produk tipis</span>
               </div>
               <div className="mt-5">
@@ -110,23 +160,30 @@ export default function DashboardHome() {
               </h2>
             </div>
             <div className="space-y-8 flex-1">
-              {[
-                { type: 'stock', text: 'Stok Indomie Goreng diperbarui (+50)', time: '2 menit lalu', icon: PackageOpen, color: 'text-amber-500', bg: 'bg-amber-50' },
-                { type: 'sale', text: 'Transaksi baru #TRX-0982 selesai', time: '5 menit lalu', icon: CheckCircle2, color: 'text-orange-500', bg: 'bg-orange-50' },
-                { type: 'login', text: 'Manager Siti masuk ke sistem', time: '1 jam lalu', icon: Clock, color: 'text-slate-500', bg: 'bg-slate-50' },
-                { type: 'stock', text: 'Stok Kopi Kenangan menipis (< 10)', time: '3 jam lalu', icon: AlertTriangle, color: 'text-rose-500', bg: 'bg-rose-50' },
-              ].map((activity, i) => (
-                <div key={i} className="flex gap-5 relative group">
-                  {i !== 3 && <div className="absolute left-[23px] top-12 bottom-[-32px] w-0.5 bg-slate-100/80"></div>}
-                  <div className={`w-12 h-12 rounded-2xl ${activity.bg} ${activity.color} flex items-center justify-center shrink-0 shadow-sm relative z-10 group-hover:scale-110 transition-transform duration-300 border border-white`}>
-                    <activity.icon size={20} />
+              {stats.latestActivities.length > 0 ? stats.latestActivities.map((activity, i) => {
+                const isStock = activity.type === 'stock';
+                const Icon = isStock ? PackageOpen : (activity.type === 'sale' ? CheckCircle2 : Clock);
+                const color = isStock ? 'text-amber-500' : (activity.type === 'sale' ? 'text-orange-500' : 'text-slate-500');
+                const bg = isStock ? 'bg-amber-50' : (activity.type === 'sale' ? 'bg-orange-50' : 'bg-slate-50');
+                
+                return (
+                  <div key={i} className="flex gap-5 relative group">
+                    {i !== stats.latestActivities.length - 1 && <div className="absolute left-[23px] top-12 bottom-[-32px] w-0.5 bg-slate-100/80"></div>}
+                    <div className={`w-12 h-12 rounded-2xl ${bg} ${color} flex items-center justify-center shrink-0 shadow-sm relative z-10 group-hover:scale-110 transition-transform duration-300 border border-white`}>
+                      <Icon size={20} />
+                    </div>
+                    <div className="flex-1 pt-1">
+                      <p className="text-[15px] font-bold text-text-primary leading-snug group-hover:text-primary transition-colors cursor-default">{activity.text}</p>
+                      <p className="text-[11px] text-text-muted font-black mt-1.5 uppercase tracking-widest opacity-70">{activity.time}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 pt-1">
-                    <p className="text-[15px] font-bold text-text-primary leading-snug group-hover:text-primary transition-colors cursor-default">{activity.text}</p>
-                    <p className="text-[11px] text-text-muted font-black mt-1.5 uppercase tracking-widest opacity-70">{activity.time}</p>
-                  </div>
+                );
+              }) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <History size={32} className="text-slate-200 mb-2" />
+                  <p className="text-sm text-text-muted">Belum ada aktivitas hari ini</p>
                 </div>
-              ))}
+              )}
             </div>
             <button className="w-full mt-10 py-3.5 rounded-2xl border border-slate-100 text-[11px] font-black text-text-secondary uppercase tracking-widest hover:bg-orange-50 hover:text-orange-600 hover:border-orange-100 transition-all active:scale-95">
               Lihat Semua Aktivitas
@@ -144,28 +201,30 @@ export default function DashboardHome() {
               </h2>
             </div>
             <div className="space-y-4 flex-1">
-              {[
-                { name: 'Kopi Kenangan Mantan', sales: 342, trend: '+12%', color: 'text-orange-500', icon: Coffee },
-                { name: 'Roti Coklat Spesial', sales: 215, trend: '+8%', color: 'text-orange-500', icon: UtensilsCrossed },
-                { name: 'Es Teh Tarik', sales: 189, trend: '-2%', color: 'text-rose-500', icon: CupSoda },
-                { name: 'Indomie Goreng Jumbo', sales: 156, trend: '+15%', color: 'text-orange-500', icon: Soup },
-                { name: 'Air Mineral 600ml', sales: 120, trend: '+5%', color: 'text-orange-500', icon: Droplets },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-3xl bg-slate-50/40 border border-slate-100/50 hover:border-orange-200 hover:bg-white hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-orange-500 group-hover:scale-110 group-hover:rotate-3 transition-all shadow-sm">
-                      <item.icon size={22} />
+              {stats.topProducts.length > 0 ? stats.topProducts.map((item, i) => {
+                const Icon = item.category === 'MINUMAN' ? Coffee : (item.category === 'MAKANAN' ? UtensilsCrossed : ShoppingBag);
+                return (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-3xl bg-slate-50/40 border border-slate-100/50 hover:border-orange-200 hover:bg-white hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-orange-500 group-hover:scale-110 group-hover:rotate-3 transition-all shadow-sm">
+                        <Icon size={22} />
+                      </div>
+                      <div>
+                        <p className="text-[15px] font-bold text-text-primary group-hover:text-orange-600 transition-colors">{item.name}</p>
+                        <p className="text-[11px] text-text-muted font-black uppercase tracking-widest mt-0.5 opacity-60">{item.sales} unit terjual</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[15px] font-bold text-text-primary group-hover:text-orange-600 transition-colors">{item.name}</p>
-                      <p className="text-[11px] text-text-muted font-black uppercase tracking-widest mt-0.5 opacity-60">{item.sales} unit terjual</p>
+                    <div className="text-right">
+                      <span className={`text-[10px] font-black text-orange-500 px-3 py-1.5 bg-white rounded-xl shadow-sm border border-slate-50 uppercase tracking-tighter`}>HOT</span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className={`text-[10px] font-black ${item.color} px-3 py-1.5 bg-white rounded-xl shadow-sm border border-slate-50 uppercase tracking-tighter`}>{item.trend}</span>
-                  </div>
+                );
+              }) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <ShoppingBag size={32} className="text-slate-200 mb-2" />
+                  <p className="text-sm text-text-muted">Belum ada data penjualan</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

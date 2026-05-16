@@ -149,7 +149,43 @@ export default function PosPage() {
     localStorage.setItem('pos_products', JSON.stringify(updatedProducts));
     setProducts(updatedProducts); // Update local state for immediate feedback
     
-    // 3. Open receipt modal
+    // 3. Save Transaction to localStorage
+    const newTransaction = {
+      id: transactionId,
+      date: transactionDate,
+      items: cart.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        category: item.category
+      })),
+      total: total,
+      cashier: userName,
+      location: userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok',
+      timestamp: Date.now()
+    };
+    
+    const savedTransactions = JSON.parse(localStorage.getItem('pos_transactions') || '[]');
+    localStorage.setItem('pos_transactions', JSON.stringify([newTransaction, ...savedTransactions]));
+
+    // 4. Save Mutations to localStorage
+    const newMutations = cart.map(item => ({
+      id: `MUT-${Date.now()}-${item.id}`,
+      date: transactionDate,
+      product: item.name,
+      qty: item.quantity,
+      from: userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok',
+      to: 'Pelanggan (Penjualan)',
+      type: 'sale',
+      status: 'Selesai',
+      timestamp: Date.now()
+    }));
+
+    const savedMutations = JSON.parse(localStorage.getItem('pos_mutations') || '[]');
+    localStorage.setItem('pos_mutations', JSON.stringify([...newMutations, ...savedMutations]));
+
+    // 5. Open receipt modal
     setIsReceiptModalOpen(true);
     setCart([]);
   };
