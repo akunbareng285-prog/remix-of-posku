@@ -1,47 +1,87 @@
 'use client';
 
-import { DollarSign, ShoppingBag, TrendingUp, Download, BarChart3 } from 'lucide-react';
+import { DollarSign, ShoppingBag, TrendingUp, Download, BarChart3, CreditCard, Wallet } from 'lucide-react';
 import { useState, useEffect } from 'react';
+
+interface ChartBar { day: string; revenue: number; label: string; pct: number; }
+interface PayMethod { method: string; count: number; pct: number; }
+
+const METHOD_COLORS: Record<string, string> = {
+  Cash: 'bg-emerald-500',
+  QRIS: 'bg-indigo-500',
+  Transfer: 'bg-amber-500',
+  Debit: 'bg-sky-500',
+  Kredit: 'bg-rose-500',
+};
 
 export default function ReportsPage() {
   const [data, setData] = useState({
     totalRevenue: 0,
     totalTransactions: 0,
+    avgValue: 0,
     topProduct: { name: 'Belum ada', qty: 0 },
-    chartData: [] as any[],
-    productDetails: [] as any[]
+    chartData: [] as ChartBar[],
+    productDetails: [] as any[],
+    payMethods: [] as PayMethod[],
   });
 
   useEffect(() => {
-    const transactions = JSON.parse(localStorage.getItem('pos_transactions') || '[]');
-    
-    // 1. Basic Stats
-    const totalRev = transactions.reduce((sum: number, t: any) => sum + t.total, 0);
-    
-    // 2. Product Sales for Top Product & Details
+    const transactions: any[] = JSON.parse(localStorage.getItem('pos_transactions') || '[]');
+
+    // === KPIs ===
+    const totalRev = transactions.reduce((s, t) => s + t.total, 0);
+    const avgValue = transactions.length > 0 ? totalRev / transactions.length : 0;
+
+    // === Product Sales ===
     const productSales: Record<string, { count: number; category: string; revenue: number }> = {};
-    transactions.forEach((t: any) => {
-      t.items.forEach((item: any) => {
-        if (!productSales[item.name]) {
-          productSales[item.name] = { count: 0, category: item.category, revenue: 0 };
-        }
+    transactions.forEach(t => {
+      (t.items || []).forEach((item: any) => {
+        if (!productSales[item.name]) productSales[item.name] = { count: 0, category: item.category, revenue: 0 };
         productSales[item.name].count += item.quantity;
-        productSales[item.name].revenue += (item.price * item.quantity);
+        productSales[item.name].revenue += item.price * item.quantity;
       });
     });
-
     const sortedProds = Object.entries(productSales)
       .map(([name, d]) => ({ name, cat: d.category, qty: d.count, rev: d.revenue }))
       .sort((a, b) => b.qty - a.qty);
 
-    const top = sortedProds[0] || { name: 'Belum ada', qty: 0 };
+    // === 7-Day Chart Data ===
+    const chartData: ChartBar[] = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const dayKey = d.toDateString();
+      const dayRev = transactions
+        .filter(t => new Date(t.timestamp).toDateString() === dayKey)
+        .reduce((s, t) => s + t.total, 0);
+      return { day: d.toLocaleDateString('id-ID', { weekday: 'short' }), revenue: dayRev, label: '', pct: 0 };
+    });
+    const maxRev = Math.max(...chartData.map(c => c.revenue), 1);
+    chartData.forEach(c => {
+      c.pct = Math.round((c.revenue / maxRev) * 100);
+      c.label = c.revenue > 0
+        ? `Rp ${(c.revenue / 1_000_000).toFixed(1)}jt`
+        : 'Rp 0';
+    });
+
+    // === Payment Method Distribution ===
+    const methodCount: Record<string, number> = {};
+    transactions.forEach(t => {
+      const m = t.paymentMethod || 'Cash';
+      methodCount[m] = (methodCount[m] || 0) + 1;
+    });
+    const total = transactions.length || 1;
+    const payMethods: PayMethod[] = Object.entries(methodCount)
+      .map(([method, count]) => ({ method, count, pct: Math.round((count / total) * 100) }))
+      .sort((a, b) => b.count - a.count);
 
     setData({
       totalRevenue: totalRev,
       totalTransactions: transactions.length,
-      topProduct: top,
-      chartData: [], // Would need complex date grouping logic
-      productDetails: sortedProds.slice(0, 8)
+      avgValue,
+      topProduct: sortedProds[0] || { name: 'Belum ada', qty: 0 },
+      chartData,
+      productDetails: sortedProds.slice(0, 8),
+      payMethods,
     });
   }, []);
 
@@ -49,143 +89,154 @@ export default function ReportsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight">Laporan</h1>
-          <p className="text-sm text-text-muted mt-1">Ringkasan performa bisnis Anda</p>
+          <h1 className="page-title">Laporan</h1>
+          <p className="page-subtitle">Ringkasan performa bisnis Anda</p>
         </div>
-        <button className="pro-button-secondary">
-          <Download size={16} /> Download PDF
-        </button>
+        <button className="pro-button-secondary"><Download size={15} /> Export Excel</button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="pro-stat-card before:bg-orange-500 group relative overflow-hidden">
-          <div className="flex items-center justify-between mb-6 relative z-10">
-            <span className="text-[13px] font-black text-text-secondary uppercase tracking-widest opacity-80">Total Pendapatan</span>
-            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 group-hover:bg-orange-100 transition-colors">
-              <DollarSign size={18} />
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
+        {[
+          { label: 'Total Pendapatan', value: `Rp ${data.totalRevenue.toLocaleString('id-ID')}`, sub: 'Semua Waktu', icon: DollarSign, color: 'bg-orange-500', bar: 'before:bg-orange-500' },
+          { label: 'Total Transaksi', value: data.totalTransactions.toString(), sub: 'Order Berhasil', icon: ShoppingBag, color: 'bg-amber-500', bar: 'before:bg-amber-500' },
+          { label: 'Rata-rata Transaksi', value: `Rp ${Math.round(data.avgValue).toLocaleString('id-ID')}`, sub: 'Per Order', icon: CreditCard, color: 'bg-emerald-500', bar: 'before:bg-emerald-500' },
+          { label: 'Produk Terlaris', value: data.topProduct.name, sub: `${data.topProduct.qty} unit terjual`, icon: BarChart3, color: 'bg-indigo-500', bar: 'before:bg-indigo-500' },
+        ].map(card => (
+          <div key={card.label} className={`pro-stat-card ${card.bar} group relative overflow-hidden`}>
+            <div className="flex items-center justify-between mb-5 relative z-10">
+              <span className="overline">{card.label}</span>
+              <div className={`w-9 h-9 rounded-xl ${card.color} flex items-center justify-center text-white shrink-0`}>
+                <card.icon size={16} />
+              </div>
             </div>
+            <p className="text-lg font-bold text-text-primary truncate">{card.value}</p>
+            <p className="overline mt-2">{card.sub}</p>
           </div>
-          <p className="text-3xl font-black text-text-primary tracking-tighter">Rp {data.totalRevenue.toLocaleString('id-ID')}</p>
-          <p className="text-[11px] text-text-muted font-black mt-3 uppercase tracking-widest opacity-70">Semua Waktu</p>
-        </div>
-
-        <div className="pro-stat-card before:bg-amber-500 group relative overflow-hidden">
-          <div className="flex items-center justify-between mb-6 relative z-10">
-            <span className="text-[13px] font-black text-text-secondary uppercase tracking-widest opacity-80">Total Transaksi</span>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 transition-colors">
-              <ShoppingBag size={18} />
-            </div>
-          </div>
-          <p className="text-3xl font-black text-text-primary tracking-tighter">{data.totalTransactions}</p>
-          <p className="text-[11px] text-text-muted font-black mt-3 uppercase tracking-widest opacity-70">Order Berhasil</p>
-        </div>
-
-        <div className="pro-stat-card before:bg-orange-600 group relative overflow-hidden">
-          <div className="flex items-center justify-between mb-6 relative z-10">
-            <span className="text-[13px] font-black text-text-secondary uppercase tracking-widest opacity-80">Produk Terlaris</span>
-            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-100 transition-colors">
-              <BarChart3 size={18} />
-            </div>
-          </div>
-          <p className="text-xl font-black text-text-primary tracking-tight truncate">{data.topProduct.name}</p>
-          <p className="text-[11px] text-text-muted font-black mt-3 uppercase tracking-widest opacity-70">{data.topProduct.qty} unit terjual</p>
-        </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-stretch">
-        <div className="pro-card flex flex-col relative overflow-hidden">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
+        {/* Bar Chart — Real 7-day data */}
+        <div className="pro-card flex flex-col">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-xl font-black text-text-primary">Penjualan 7 Hari Terakhir</h3>
-              <p className="text-[11px] text-text-muted font-black uppercase tracking-widest mt-1 opacity-70">Tren penjualan harian</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <select className="pro-select text-[11px] py-1.5 font-black uppercase tracking-widest">
-                <option>7 Hari</option>
-                <option>30 Hari</option>
-                <option>3 Bulan</option>
-              </select>
+              <h3 className="section-title">Penjualan 7 Hari Terakhir</h3>
+              <p className="overline mt-1">Tren pendapatan harian</p>
             </div>
           </div>
 
-          <div className="h-96 mt-8 ml-8 relative flex items-end justify-between gap-3 px-2 flex-1">
-            {/* Grid lines */}
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8">
-              {[4, 3, 2, 1, 0].map((line) => (
-                <div key={line} className="w-full border-t border-dashed border-slate-100 flex items-center h-0">
-                  <span className="absolute -left-3 -translate-x-full text-[10px] text-slate-400 font-black opacity-60">
-                    {line === 0 ? '0' : `${line * 10}jt`}
-                  </span>
+          {data.chartData.every(c => c.revenue === 0) ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-16 text-text-muted">
+              <TrendingUp size={36} className="mb-3 opacity-20" />
+              <p className="text-sm font-medium">Belum ada data penjualan</p>
+              <p className="text-xs mt-1">Data akan muncul setelah ada transaksi</p>
+            </div>
+          ) : (
+            <div className="relative h-64 flex items-end gap-2 mt-4 pt-4">
+              {/* Y-axis guide lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[4, 3, 2, 1, 0].map(i => (
+                  <div key={i} className="w-full border-t border-dashed border-slate-100" />
+                ))}
+              </div>
+              {/* Bars */}
+              {data.chartData.map((bar, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center justify-end h-full relative z-10 group">
+                  <div className="relative w-full max-w-[40px] mx-auto" style={{ height: `${Math.max(bar.pct, 4)}%` }}>
+                    <div className="absolute inset-0 bg-primary rounded-t-xl transition-all duration-700 shadow-md shadow-primary/20 group-hover:bg-primary-hover" />
+                    {/* Tooltip */}
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-semibold py-1.5 px-2.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none z-20 shadow-xl">
+                      {bar.label}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-4 border-transparent border-t-slate-800" />
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-semibold text-slate-400 mt-2 uppercase">{bar.day}</span>
                 </div>
               ))}
             </div>
-            
-            {/* Bars */}
-            {[
-              { day: 'Sen', value: 45, label: 'Rp 18.5jt' },
-              { day: 'Sel', value: 30, label: 'Rp 12.0jt' },
-              { day: 'Rab', value: 65, label: 'Rp 26.5jt' },
-              { day: 'Kam', value: 50, label: 'Rp 20.2jt' },
-              { day: 'Jum', value: 85, label: 'Rp 34.0jt' },
-              { day: 'Sab', value: 100, label: 'Rp 40.5jt' },
-              { day: 'Min', value: 75, label: 'Rp 30.1jt' },
-            ].map((bar, i) => (
-              <div key={i} className="relative flex flex-col items-center flex-1 h-full justify-end pb-8 group z-10">
-                <div className="w-full max-w-[40px] bg-orange-500/10 hover:bg-orange-500/20 transition-all duration-300 rounded-t-2xl relative cursor-pointer group-hover:scale-105" style={{ height: `${bar.value}%` }}>
-                  <div className="absolute inset-x-0 bottom-0 bg-orange-500 rounded-t-2xl transition-all duration-500 shadow-[0_0_20px_rgba(249,115,22,0.4)]" style={{ height: '100%' }}></div>
-                  
-                  {/* Tooltip */}
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[11px] font-black py-2 px-3 rounded-xl opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 whitespace-nowrap pointer-events-none shadow-2xl z-20">
-                    {bar.label}
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-[6px] border-transparent border-t-slate-800"></div>
-                  </div>
-                </div>
-                <span className="absolute bottom-0 text-[10px] font-black text-slate-400 mt-2 uppercase tracking-[0.2em]">{bar.day}</span>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
 
-        <div className="pro-card flex flex-col relative overflow-hidden">
-          <h3 className="text-xl font-black text-text-primary mb-8">Rincian Produk Terlaris</h3>
-          <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 text-[11px] text-text-muted uppercase tracking-[0.2em]">
-                  <th className="pb-4 font-black pl-2 opacity-60">Nama Produk</th>
-                  <th className="pb-4 font-black opacity-60">Kategori</th>
-                  <th className="pb-4 font-black text-right opacity-60">Terjual</th>
-                  <th className="pb-4 font-black text-right opacity-60">Pendapatan</th>
-                  <th className="pb-4 font-black text-right pr-2 opacity-60">Kontribusi</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {data.productDetails.length > 0 ? data.productDetails.map((item, i) => {
-                  const pct = data.totalRevenue > 0 ? Math.round((item.rev / data.totalRevenue) * 100) : 0;
-                  return (
-                    <tr key={i} className="border-b border-slate-50 last:border-0 hover:bg-orange-50/30 transition-all group">
-                      <td className="py-4.5 pl-2 font-black text-text-primary group-hover:text-orange-600 transition-colors">{item.name}</td>
-                      <td className="py-4.5 text-[11px] text-text-muted font-black uppercase tracking-widest opacity-60">{item.cat}</td>
-                      <td className="py-4.5 text-right text-orange-600 font-black">{item.qty}</td>
-                      <td className="py-4.5 text-right text-text-secondary font-bold text-xs">Rp {item.rev.toLocaleString('id-ID')}</td>
-                      <td className="py-4.5 pr-2 text-right">
-                        <div className="flex items-center justify-end gap-3">
-                          <span className="text-[10px] font-black text-text-muted w-8">{pct}%</span>
-                          <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                            <div className="h-full bg-orange-500 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.4)]" style={{ width: `${pct}%` }}></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                }) : (
-                  <tr>
-                    <td colSpan={5} className="py-12 text-center text-text-muted font-medium">Belum ada data penjualan produk</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+        {/* Payment Method Breakdown */}
+        <div className="pro-card flex flex-col">
+          <div className="mb-6">
+            <h3 className="section-title">Metode Pembayaran</h3>
+            <p className="overline mt-1">Distribusi metode bayar</p>
           </div>
+
+          {data.payMethods.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-12 text-text-muted">
+              <Wallet size={32} className="mb-3 opacity-20" />
+              <p className="text-sm font-medium">Belum ada data</p>
+            </div>
+          ) : (
+            <div className="space-y-4 flex-1">
+              {data.payMethods.map(m => (
+                <div key={m.method}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2.5 h-2.5 rounded-full ${METHOD_COLORS[m.method] || 'bg-slate-400'}`} />
+                      <span className="text-sm font-semibold text-text-primary">{m.method}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-text-muted">{m.count}x</span>
+                      <span className="text-sm font-bold text-text-primary w-9 text-right">{m.pct}%</span>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${METHOD_COLORS[m.method] || 'bg-slate-400'} rounded-full transition-all duration-700`}
+                      style={{ width: `${m.pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Top Products Table */}
+      <div className="pro-card">
+        <h3 className="section-title mb-6">Rincian Produk Terlaris</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="pb-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Nama Produk</th>
+                <th className="pb-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Kategori</th>
+                <th className="pb-3 text-xs font-semibold text-text-muted uppercase tracking-wider text-right">Terjual</th>
+                <th className="pb-3 text-xs font-semibold text-text-muted uppercase tracking-wider text-right">Pendapatan</th>
+                <th className="pb-3 text-xs font-semibold text-text-muted uppercase tracking-wider text-right pr-2">Kontribusi</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm divide-y divide-slate-50">
+              {data.productDetails.length > 0 ? data.productDetails.map((item, i) => {
+                const pct = data.totalRevenue > 0 ? Math.round((item.rev / data.totalRevenue) * 100) : 0;
+                return (
+                  <tr key={i} className="hover:bg-orange-50/30 transition-colors">
+                    <td className="py-3.5 font-semibold text-text-primary">{item.name}</td>
+                    <td className="py-3.5"><span className="pro-badge-info text-xs">{item.cat}</span></td>
+                    <td className="py-3.5 text-right font-bold text-primary">{item.qty}</td>
+                    <td className="py-3.5 text-right text-text-secondary">Rp {item.rev.toLocaleString('id-ID')}</td>
+                    <td className="py-3.5 pr-2">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="text-xs text-text-muted w-8 text-right">{pct}%</span>
+                        <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }) : (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-text-muted">Belum ada data penjualan produk</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

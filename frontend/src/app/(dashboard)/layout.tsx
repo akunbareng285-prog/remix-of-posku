@@ -3,11 +3,15 @@
 import {
   LayoutDashboard, ShoppingCart, Package, ArrowRightLeft,
   FileBarChart, Settings, LogOut, Store, Users, Bell,
-  Search, ChevronDown, Menu, X
+  Search, ChevronDown, Menu, X, Layers, PackageCheck,
+  Truck, Tag, Receipt, MapPin
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+interface NavItem { href: string; icon: React.ElementType; label: string; roles: string[]; }
+interface NavGroup { label: string | null; items: NavItem[]; }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -20,11 +24,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const savedRole = localStorage.getItem('pos_role');
     const savedName = localStorage.getItem('pos_user_name');
-    if (!savedRole) {
-      router.push('/login');
-    } else if (savedRole === 'KASIR') {
-      router.push('/pos');
-    } else {
+    if (!savedRole) { router.push('/login'); }
+    else if (savedRole === 'KASIR') { router.push('/pos'); }
+    else {
       setRole(savedRole);
       setUserName(savedName || (savedRole === 'ADMIN' ? 'Budi Admin' : 'Siti Manager'));
     }
@@ -38,155 +40,135 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!role) return null;
 
-  const canSeeDashboard = ['ADMIN', 'MANAGER'].includes(role);
-  const canSeeProducts = ['ADMIN', 'MANAGER'].includes(role);
-  const canSeeMutations = ['ADMIN', 'MANAGER'].includes(role);
-  const canSeeReports = ['ADMIN', 'MANAGER'].includes(role);
-  const canSeeSettings = ['ADMIN'].includes(role);
-
-  const navItems = [
-    ...(canSeeDashboard ? [{ href: '/', icon: LayoutDashboard, label: 'Dashboard' }] : []),
-    ...(canSeeProducts ? [{ href: '/products', icon: Package, label: 'Produk Master' }] : []),
-    ...(canSeeMutations ? [{ href: '/mutations', icon: ArrowRightLeft, label: 'Mutasi Stok' }] : []),
-    ...(canSeeReports ? [{ href: '/reports', icon: FileBarChart, label: 'Laporan' }] : []),
+  const navGroups: NavGroup[] = [
+    {
+      label: null,
+      items: [
+        { href: '/', icon: LayoutDashboard, label: 'Dashboard', roles: ['ADMIN', 'MANAGER'] },
+      ]
+    },
+    {
+      label: 'Inventori',
+      items: [
+        { href: '/products', icon: Package, label: 'Produk', roles: ['ADMIN', 'MANAGER'] },
+        { href: '/stock-locations', icon: Layers, label: 'Stok & Lokasi', roles: ['ADMIN', 'MANAGER'] },
+        { href: '/barang-masuk', icon: PackageCheck, label: 'Barang Masuk', roles: ['ADMIN', 'MANAGER'] },
+        { href: '/transfer-stok', icon: ArrowRightLeft, label: 'Transfer Stok', roles: ['ADMIN', 'MANAGER'] },
+      ]
+    },
+    {
+      label: 'Laporan',
+      items: [
+        { href: '/transactions', icon: Receipt, label: 'Transaksi', roles: ['ADMIN', 'MANAGER'] },
+        { href: '/reports', icon: FileBarChart, label: 'Laporan', roles: ['ADMIN', 'MANAGER'] },
+        { href: '/promotions', icon: Tag, label: 'Promosi', roles: ['ADMIN'] },
+      ]
+    },
+    {
+      label: 'Master Data',
+      items: [
+        { href: '/suppliers', icon: Truck, label: 'Supplier', roles: ['ADMIN'] },
+        { href: '/stores', icon: MapPin, label: 'Lokasi', roles: ['ADMIN'] },
+        { href: '/users', icon: Users, label: 'Pengguna', roles: ['ADMIN'] },
+        { href: '/settings', icon: Settings, label: 'Pengaturan', roles: ['ADMIN'] },
+      ]
+    }
   ];
 
-  const settingsItems = [
-    ...(canSeeSettings ? [
-      { href: '/stores', icon: Store, label: 'Atur Toko' },
-      { href: '/users', icon: Users, label: 'Pegawai & Role' },
-      { href: '/settings', icon: Settings, label: 'Pengaturan' },
-    ] : []),
-  ];
+  const isActive = (href: string) => pathname === href;
 
-  const isActive = (path: string) => pathname === path;
-
-  const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => (
+  const NavLink = ({ href, icon: Icon, label }: NavItem) => (
     <Link
       href={href}
       onClick={() => setSidebarOpen(false)}
-      className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300 group
+      className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 group
         ${isActive(href)
-          ? 'bg-white text-primary shadow-lg shadow-black/10 translate-x-1'
+          ? 'bg-white text-primary shadow-md shadow-black/10'
           : 'text-white/80 hover:text-white hover:bg-white/10'
         }`}
     >
-      <Icon size={20} className={`transition-colors ${isActive(href) ? 'text-primary' : 'text-white/70 group-hover:text-white'}`} />
-      <span>{label}</span>
-      {isActive(href) && (
-        <div className="ml-auto w-2 h-2 rounded-full bg-primary animate-pulse" />
-      )}
+      <Icon size={17} className={`shrink-0 transition-colors ${isActive(href) ? 'text-primary' : 'text-white/60 group-hover:text-white'}`} />
+      <span className="truncate">{label}</span>
+      {isActive(href) && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
     </Link>
   );
 
   return (
     <div className="flex h-screen bg-transparent overflow-hidden relative">
-      {/* Decorative Background */}
-      <div className="mesh-bg">
-        <div className="mesh-blob-1" />
-        <div className="mesh-blob-2" />
-        <div className="mesh-blob-3" />
-      </div>
+      <div className="mesh-bg" />
 
-      {/* Mobile overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] lg:hidden transition-opacity"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-40 lg:z-10
-        w-[280px] bg-primary flex flex-col
+        w-[240px] bg-primary flex flex-col shrink-0
         border-r border-primary-hover shadow-[4px_0_24px_rgba(255,140,0,0.15)]
         transition-transform duration-300 ease-out text-white
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
-        <div className="flex h-20 items-center gap-4 px-6 border-b border-white/20">
-          <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-black/10">
-            <ShoppingCart size={20} className="text-primary" />
+        <div className="flex h-14 items-center gap-3 px-4 border-b border-white/20 shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-md">
+            <ShoppingCart size={16} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-lg font-extrabold text-white tracking-tight">POS System</h1>
-            <p className="text-[11px] text-white/70 font-bold tracking-wider uppercase">Multi-Location</p>
+            <p className="text-sm font-extrabold text-white tracking-tight leading-tight">POS System</p>
+            <p className="text-[9px] text-white/60 font-semibold tracking-widest uppercase">Multi-Location</p>
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden p-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors"
-          >
-            <X size={18} />
+          <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden p-1.5 bg-white/10 rounded-lg hover:bg-white/20">
+            <X size={15} />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          <p className="px-4 py-2 text-[10px] font-extrabold text-white/50 uppercase tracking-widest">Menu Utama</p>
-          {navItems.map((item) => (
-            <NavLink key={item.href} {...item} />
-          ))}
-
-          {settingsItems.length > 0 && (
-            <>
-              <div className="my-6 mx-4 border-t border-white/10" />
-              <p className="px-4 py-2 text-[10px] font-extrabold text-white/50 uppercase tracking-widest">Pengaturan</p>
-              {settingsItems.map((item) => (
-                <NavLink key={item.href} {...item} />
-              ))}
-            </>
-          )}
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-0.5">
+          {navGroups.map((group, gi) => {
+            const items = group.items.filter(i => i.roles.includes(role!));
+            if (!items.length) return null;
+            return (
+              <div key={gi} className={gi > 0 ? 'mt-3' : ''}>
+                {group.label && (
+                  <p className="px-3 pt-2 pb-1.5 text-[9.5px] font-bold text-white/40 uppercase tracking-[0.12em]">
+                    {group.label}
+                  </p>
+                )}
+                <div className="space-y-0.5">
+                  {items.map(item => <NavLink key={item.href} {...item} />)}
+                </div>
+              </div>
+            );
+          })}
         </nav>
 
-        {/* User section at bottom */}
-        <div className="p-4 border-t border-white/20 bg-primary-hover/30 relative">
+        {/* User */}
+        <div className="p-3 border-t border-white/20 bg-black/10 relative shrink-0">
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-200 text-left text-white"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all text-left"
           >
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-sm font-bold text-primary shrink-0 shadow-md">
+            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-xs font-bold text-primary shrink-0">
               {userName?.substring(0, 2).toUpperCase() || 'AD'}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold truncate">{userName}</p>
-              <p className="text-[11px] text-white/70 font-semibold uppercase tracking-wider">{role}</p>
+              <p className="text-xs font-semibold truncate">{userName}</p>
+              <p className="text-[9px] text-white/60 font-semibold uppercase tracking-wider">{role}</p>
             </div>
-            <ChevronDown size={16} className={`text-white/70 shrink-0 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown size={13} className={`text-white/60 shrink-0 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {profileOpen && (
             <>
-              <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-[2px]" onClick={() => setProfileOpen(false)} />
-              <div className="absolute bottom-[calc(100%-0.5rem)] left-4 w-[248px] bg-white/90 backdrop-blur-xl rounded-2xl border border-white shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)] py-2 z-40 animate-scale-in">
+              <div className="fixed inset-0 z-[100]" onClick={() => setProfileOpen(false)} />
+              <div className="absolute bottom-[calc(100%+4px)] left-3 w-[214px] bg-white rounded-2xl border border-slate-100 shadow-xl py-2 z-[101] animate-scale-in">
                 <div className="px-4 py-3 border-b border-slate-100 mb-1">
                   <p className="text-sm font-bold text-text-primary">{userName}</p>
-                  <p className="text-xs text-primary font-bold tracking-wider uppercase mb-3">{role}</p>
-                  
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-100/80 p-2.5 rounded-xl border border-white shadow-inner">
-                    <Store size={14} className="text-primary" />
-                    <span>{role === 'ADMIN' ? 'Semua Cabang (Pusat)' : 'Cabang Depok'}</span>
-                  </div>
+                  <p className="text-xs text-primary font-semibold uppercase tracking-wide mt-0.5">{role}</p>
                 </div>
-                
-                {role === 'ADMIN' && (
-                  <>
-                    <Link
-                      href="/users"
-                      onClick={() => setProfileOpen(false)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors"
-                    >
-                      <Users size={16} /> Tambah Akun
-                    </Link>
-                    <div className="mx-4 my-1 border-t border-slate-100" />
-                  </>
-                )}
-                
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors"
-                >
-                  <LogOut size={16} /> Keluar Aplikasi
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50 transition-colors">
+                  <LogOut size={15} /> Keluar Aplikasi
                 </button>
               </div>
             </>
@@ -194,58 +176,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0 z-10">
-        {/* Header - Glassmorphism */}
-        <header className="h-20 flex items-center justify-between px-6 lg:px-8 bg-white/60 backdrop-blur-xl border-b border-white shadow-sm z-20 shrink-0">
-          {/* Left: Mobile menu + Search */}
-          <div className="flex items-center gap-4 flex-1">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2.5 -ml-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-2xl transition-colors bg-white/50 border border-white"
-            >
+        <header className="h-14 flex items-center justify-between px-5 lg:px-7 bg-white/60 backdrop-blur-xl border-b border-white shadow-sm z-20 shrink-0">
+          <div className="flex items-center gap-3 flex-1">
+            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-xl transition-colors">
               <Menu size={20} />
             </button>
-            <div className="relative hidden sm:block w-full max-w-md">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input
-                type="text"
-                placeholder="Cari transaksi atau produk..."
-                className="w-full pl-11 pr-4 py-2.5 bg-white/70 backdrop-blur-md border border-white rounded-2xl text-sm font-medium text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all duration-300 shadow-sm"
-              />
+            <div className="relative hidden sm:block w-full max-w-sm">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+              <input type="text" placeholder="Cari produk atau transaksi..." className="w-full pl-10 pr-4 py-2 bg-white/70 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
             </div>
           </div>
-
-          {/* Right: Date, Notifications, Profile */}
-          <div className="flex items-center gap-3 lg:gap-5 shrink-0">
-            <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-white/60 border border-white rounded-2xl shadow-sm">
-              <span className="text-xs text-text-secondary font-bold">
-                {new Date().toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
-              </span>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-white/60 border border-white rounded-xl text-xs text-text-secondary font-medium">
+              {new Date().toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
             </div>
-
-            <div className="hidden lg:block w-px h-8 bg-slate-200/50" />
-
-            {/* Notification */}
-            <button className="relative p-2.5 text-text-secondary hover:text-primary hover:bg-primary/10 bg-white/60 border border-white shadow-sm rounded-2xl transition-all duration-200 hover:scale-105">
-              <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse" />
+            <button className="relative p-2 text-text-secondary hover:text-primary bg-white/60 border border-white rounded-xl transition-all hover:scale-105">
+              <Bell size={17} />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full ring-1 ring-white" />
             </button>
-
-            {/* Kasir Button */}
-            <Link
-              href="/pos"
-              className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/30 hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300"
-            >
-              <ShoppingCart size={18} />
-              <span className="hidden sm:block">Buka Kasir</span>
+            <Link href="/pos" className="flex items-center gap-1.5 px-3.5 py-2 bg-primary text-white text-sm font-semibold rounded-xl shadow-md shadow-primary/25 hover:-translate-y-0.5 transition-all">
+              <ShoppingCart size={15} /><span className="hidden sm:block">Buka Kasir</span>
             </Link>
           </div>
         </header>
 
-        {/* Scrollable Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-6 lg:px-10 lg:py-8">
-          <div className="w-full pb-12">{children}</div>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+          <div className="px-5 py-6 md:px-8 lg:px-10 xl:px-12 xl:py-8 max-w-[1440px] w-full pb-14">
+            {children}
+          </div>
         </main>
       </div>
     </div>

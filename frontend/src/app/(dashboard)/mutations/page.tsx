@@ -18,8 +18,8 @@ export default function MutationsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight">Mutasi Stok</h1>
-          <p className="text-sm text-text-muted mt-1">Riwayat perpindahan stok antar cabang</p>
+          <h1 className="page-title">Mutasi Stok</h1>
+          <p className="page-subtitle">Riwayat perpindahan stok antar cabang</p>
         </div>
         <button className="pro-button-primary">
           <Plus size={16} /> Buat Mutasi

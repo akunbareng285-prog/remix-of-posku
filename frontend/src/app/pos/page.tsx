@@ -37,9 +37,12 @@ export default function PosPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [profileOpen, setProfileOpen] = useState<boolean>(false);
   
+  const [isPayModalOpen, setIsPayModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<string>('Cash');
+  const [cashInput, setCashInput] = useState<number>(0);
   // Receipt state
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
-  const [lastTransaction, setLastTransaction] = useState<{ items: CartItem[]; total: number; date: string; id: string } | null>(null);
+  const [lastTransaction, setLastTransaction] = useState<{ items: CartItem[]; total: number; date: string; id: string; paymentMethod: string } | null>(null);
 
   const [categories, setCategories] = useState(['SEMUA', 'MAKANAN', 'MINUMAN', 'SNACK']);
 
@@ -125,16 +128,15 @@ export default function PosPage() {
 
   const handleCheckout = () => {
     if (cart.length === 0) return alert('Keranjang kosong!');
+    setCashInput(Math.ceil(total / 1000) * 1000);
+    setIsPayModalOpen(true);
+  };
+
+  const handleConfirmPayment = () => {
     
-    // 1. Prepare transaction data for receipt
     const transactionId = `TRX-${Date.now().toString().slice(-6)}`;
     const transactionDate = new Date().toLocaleString('id-ID');
-    setLastTransaction({
-      id: transactionId,
-      date: transactionDate,
-      items: [...cart],
-      total: total
-    });
+    setLastTransaction({ id: transactionId, date: transactionDate, items: [...cart], total, paymentMethod });
 
     // 2. Update stock in localStorage
     const currentProducts: Product[] = JSON.parse(localStorage.getItem('pos_products') || '[]');
@@ -163,6 +165,7 @@ export default function PosPage() {
       total: total,
       cashier: userName,
       location: userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok',
+      paymentMethod: paymentMethod,
       timestamp: Date.now()
     };
     
@@ -186,6 +189,7 @@ export default function PosPage() {
     localStorage.setItem('pos_mutations', JSON.stringify([...newMutations, ...savedMutations]));
 
     // 5. Open receipt modal
+    setIsPayModalOpen(false);
     setIsReceiptModalOpen(true);
     setCart([]);
   };
@@ -421,6 +425,61 @@ export default function PosPage() {
           </div>
         </div>
       </div>
+
+      {/* ===== PAYMENT MODAL ===== */}
+      {isPayModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-scale-in overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100">
+              <h2 className="section-title">Pilih Metode Pembayaran</h2>
+              <p className="text-xs text-text-muted mt-1">Total: <span className="font-bold text-primary">Rp {Math.round(total).toLocaleString('id-ID')}</span></p>
+            </div>
+            <div className="p-6 space-y-4">
+              {/* Payment method buttons */}
+              <div className="grid grid-cols-3 gap-2">
+                {['Cash', 'QRIS', 'Transfer', 'Debit', 'Kredit'].map(method => (
+                  <button key={method} onClick={() => setPaymentMethod(method)}
+                    className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
+                      paymentMethod === method
+                        ? 'border-primary bg-primary text-white shadow-md shadow-primary/25'
+                        : 'border-slate-200 bg-white text-text-secondary hover:border-primary/40 hover:text-primary'
+                    }`}>
+                    {method}
+                  </button>
+                ))}
+              </div>
+
+              {/* Cash input */}
+              {paymentMethod === 'Cash' && (
+                <div className="pt-2">
+                  <label className="block text-sm font-medium text-text-primary mb-2">Uang Diterima (Rp)</label>
+                  <input type="number" value={cashInput} min={Math.round(total)}
+                    onChange={e => setCashInput(Number(e.target.value))}
+                    className="pro-input text-lg font-bold text-right" />
+                  {cashInput >= total && (
+                    <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex justify-between items-center">
+                      <span className="text-sm text-emerald-700 font-medium">Kembalian</span>
+                      <span className="text-base font-bold text-emerald-700">
+                        Rp {Math.round(cashInput - total).toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2 border-t border-slate-100">
+                <button onClick={() => setIsPayModalOpen(false)} className="pro-button-secondary flex-1">Batal</button>
+                <button
+                  onClick={handleConfirmPayment}
+                  disabled={paymentMethod === 'Cash' && cashInput < total}
+                  className="pro-button-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                  Konfirmasi Bayar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== RECEIPT MODAL ===== */}
       {isReceiptModalOpen && lastTransaction && (

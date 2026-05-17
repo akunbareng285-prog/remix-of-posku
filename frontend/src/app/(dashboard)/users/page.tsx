@@ -80,8 +80,8 @@ export default function UsersPage() {
       <div className="space-y-6 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary tracking-tight">Pegawai & Hak Akses</h1>
-            <p className="text-sm text-text-muted mt-1">{users.length} pegawai terdaftar</p>
+            <h1 className="page-title">Pegawai &amp; Hak Akses</h1>
+            <p className="page-subtitle">{users.length} pegawai terdaftar</p>
           </div>
           <button className="pro-button-primary">
             <UserPlus size={16} /> Pegawai Baru
@@ -136,7 +136,7 @@ export default function UsersPage() {
                       {user.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-semibold text-text-primary truncate">{user.name}</h3>
+                      <h3 className="card-title truncate">{user.name}</h3>
                       <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
                         <MapPin size={11} /> {user.branch === 'pusat' ? 'Semua Cabang (Pusat)' : `Cabang ${user.branch}`}
                       </p>
@@ -191,8 +191,8 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-lg animate-scale-in overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-card-border">
-              <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-                <Edit size={18} className="text-primary" /> Edit Pegawai
+              <h2 className="section-title flex items-center gap-2">
+                <Edit size={16} className="text-primary" /> Edit Pegawai
               </h2>
               <button
                 onClick={() => setIsEditModalOpen(false)}

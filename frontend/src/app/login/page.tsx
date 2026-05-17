@@ -77,12 +77,12 @@ export default function LoginPage() {
                 <ShoppingCart size={20} className="text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-text-primary tracking-tight">POS System</h1>
-                <p className="text-xs text-text-muted font-medium">Multi-Location</p>
+                <p className="text-base font-extrabold text-text-primary tracking-tight">POS System</p>
+                <p className="text-xs text-text-muted">Multi-Location</p>
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-text-primary tracking-tight">Selamat Datang 👋</h2>
-            <p className="text-text-muted mt-1">Silakan masuk ke akun Anda untuk melanjutkan</p>
+            <h1 className="text-[1.75rem] font-bold text-text-primary tracking-tight leading-tight">Selamat Datang 👋</h1>
+            <p className="page-subtitle">Silakan masuk ke akun Anda untuk melanjutkan</p>
           </div>
 
           <form onSubmit={handleFormLogin} className="space-y-5">
@@ -139,7 +139,7 @@ export default function LoginPage() {
             <Sparkles size={16} className="text-indigo-400" />
             <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Demo Mode</span>
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight mb-2">Login Cepat</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight mb-2">Login Cepat</h2>
           <p className="text-sm text-slate-400 mb-8">Pilih role untuk masuk langsung tanpa password</p>
 
           <div className="space-y-3">
@@ -155,7 +155,7 @@ export default function LoginPage() {
                   <card.icon size={22} className="text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-white text-base">{card.label}</h3>
+                  <h3 className="card-title text-white">{card.label}</h3>
                   <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{card.sublabel}</p>
                 </div>
                 <ArrowRight size={16} className="text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0" />

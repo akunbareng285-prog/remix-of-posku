@@ -32,8 +32,8 @@ export default function SettingsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight">Pengaturan</h1>
-          <p className="text-sm text-text-muted mt-1">Konfigurasi sistem dan preferensi</p>
+          <h1 className="page-title">Pengaturan</h1>
+          <p className="page-subtitle">Konfigurasi sistem dan preferensi</p>
         </div>
         <button className="pro-button-primary">
           <Save size={16} /> Simpan Perubahan
@@ -48,7 +48,7 @@ export default function SettingsPage() {
               <Monitor size={18} />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-text-primary">Pengaturan Kasir</h3>
+              <h3 className="card-title">Pengaturan Kasir</h3>
               <p className="text-xs text-text-muted">Konfigurasi perangkat POS</p>
             </div>
           </div>
@@ -81,7 +81,7 @@ export default function SettingsPage() {
               <Globe size={18} />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-text-primary">Konfigurasi Global</h3>
+              <h3 className="card-title">Konfigurasi Global</h3>
               <p className="text-xs text-text-muted">Pengaturan umum sistem</p>
             </div>
           </div>

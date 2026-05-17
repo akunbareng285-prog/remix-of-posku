@@ -11,17 +11,21 @@ interface Product {
   name: string;
   category: string;
   price: number;
+  buyPrice?: number;
   stock: number;
+  unit?: string;
+  minStock?: number;
+  isActive?: boolean;
   image: string;
 }
 
 const initialProducts: Product[] = [
-  { id: 1, sku: 'KPM01', name: 'Kopi Kenangan Mantan', category: 'MINUMAN', price: 24000, stock: 12, image: '/products/kopi-kenangan.png' },
-  { id: 2, sku: 'RC01', name: 'Roti Coklat', category: 'MAKANAN', price: 15000, stock: 8, image: '/products/roti-coklat.png' },
-  { id: 3, sku: 'ET01', name: 'Es Teh Tarik', category: 'MINUMAN', price: 10000, stock: 25, image: '/products/es-teh-tarik.png' },
-  { id: 4, sku: 'MG01', name: 'Mie Goreng Spesial', category: 'MAKANAN', price: 22000, stock: 5, image: '/products/mie-goreng.png' },
-  { id: 5, sku: 'AM01', name: 'Air Mineral 600ml', category: 'MINUMAN', price: 5000, stock: 50, image: '/products/air-mineral.png' },
-  { id: 6, sku: 'KK01', name: 'Keripik Kentang', category: 'SNACK', price: 12000, stock: 15, image: '/products/keripik-kentang.png' },
+  { id: 1, sku: 'KPM01', name: 'Kopi Kenangan Mantan', category: 'MINUMAN', price: 24000, buyPrice: 16000, stock: 12, unit: 'cup', minStock: 10, isActive: true, image: '/products/kopi-kenangan.png' },
+  { id: 2, sku: 'RC01', name: 'Roti Coklat', category: 'MAKANAN', price: 15000, buyPrice: 9000, stock: 8, unit: 'bungkus', minStock: 10, isActive: true, image: '/products/roti-coklat.png' },
+  { id: 3, sku: 'ET01', name: 'Es Teh Tarik', category: 'MINUMAN', price: 10000, buyPrice: 5000, stock: 25, unit: 'cup', minStock: 15, isActive: true, image: '/products/es-teh-tarik.png' },
+  { id: 4, sku: 'MG01', name: 'Mie Goreng Spesial', category: 'MAKANAN', price: 22000, buyPrice: 14000, stock: 5, unit: 'porsi', minStock: 10, isActive: true, image: '/products/mie-goreng.png' },
+  { id: 5, sku: 'AM01', name: 'Air Mineral 600ml', category: 'MINUMAN', price: 5000, buyPrice: 2500, stock: 50, unit: 'botol', minStock: 20, isActive: true, image: '/products/air-mineral.png' },
+  { id: 6, sku: 'KK01', name: 'Keripik Kentang', category: 'SNACK', price: 12000, buyPrice: 7000, stock: 15, unit: 'bungkus', minStock: 10, isActive: true, image: '/products/keripik-kentang.png' },
 ];
 
 export default function ProductsPage() {
@@ -39,11 +43,9 @@ export default function ProductsPage() {
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newProduct, setNewProduct] = useState<Omit<Product, 'id'>>({
-    sku: '',
-    name: '',
-    category: 'MAKANAN',
-    price: 0,
-    stock: 0,
+    sku: '', name: '', category: 'MAKANAN',
+    price: 0, buyPrice: 0, stock: 0,
+    unit: 'pcs', minStock: 10, isActive: true,
     image: '/products/kopi-kenangan.png',
   });
 
@@ -244,8 +246,8 @@ export default function ProductsPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary tracking-tight">Produk Master</h1>
-            <p className="text-sm text-text-muted mt-1">{products.length} produk terdaftar</p>
+            <h1 className="page-title">Produk Master</h1>
+            <p className="page-subtitle">{products.length} produk terdaftar</p>
           </div>
           {role === 'ADMIN' && (
             <div className="flex gap-2">
@@ -290,60 +292,57 @@ export default function ProductsPage() {
                 <th>Produk</th>
                 <th>SKU</th>
                 <th>Kategori</th>
-                <th>Harga</th>
-                <th>Stok</th>
+                <th className="text-right">Harga Jual</th>
+                <th className="text-right">Harga Beli</th>
+                <th className="text-center">Stok</th>
+                <th className="text-center">Status</th>
                 {['ADMIN', 'MANAGER'].includes(role) && <th className="text-center">Aksi</th>}
               </tr>
             </thead>
             <tbody>
               {filtered.map((prod) => (
-                <tr key={prod.id}>
+                <tr key={prod.id} className={prod.isActive === false ? 'opacity-50' : ''}>
                   <td>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-card-border shrink-0 relative">
-                        <Image
-                          src={prod.image}
-                          alt={prod.name}
-                          fill
-                          className="object-cover"
-                          sizes="48px"
-                        />
+                      <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 border border-card-border shrink-0 relative">
+                        <Image src={prod.image} alt={prod.name} fill className="object-cover" sizes="40px" />
                       </div>
-                      <span className="font-semibold text-text-primary">{prod.name}</span>
+                      <div>
+                        <p className="font-semibold text-text-primary text-sm">{prod.name}</p>
+                        <p className="text-xs text-text-muted">{prod.unit || 'pcs'}</p>
+                      </div>
                     </div>
                   </td>
-                  <td>
-                    <span className="pro-badge-neutral font-mono">{prod.sku}</span>
-                  </td>
-                  <td>
-                    <span className={`pro-badge-info`}>{prod.category}</span>
-                  </td>
-                  <td className="font-semibold text-primary">Rp {prod.price.toLocaleString('id-ID')}</td>
-                  <td>
-                    <span className={`font-semibold ${prod.stock <= 10 ? 'text-danger' : 'text-text-primary'}`}>
+                  <td><span className="pro-badge-neutral font-mono text-xs">{prod.sku}</span></td>
+                  <td><span className="pro-badge-info text-xs">{prod.category}</span></td>
+                  <td className="text-right font-semibold text-primary text-sm">Rp {prod.price.toLocaleString('id-ID')}</td>
+                  <td className="text-right text-sm text-text-secondary">{prod.buyPrice ? `Rp ${prod.buyPrice.toLocaleString('id-ID')}` : '-'}</td>
+                  <td className="text-center">
+                    <span className={`font-semibold text-sm ${
+                      prod.stock <= (prod.minStock ?? 10) ? 'text-danger' : 'text-text-primary'
+                    }`}>
                       {prod.stock}
-                      {prod.stock <= 10 && (
+                      {prod.stock <= (prod.minStock ?? 10) && (
                         <span className="ml-1.5 pro-badge-warning text-[10px]">Low</span>
                       )}
+                    </span>
+                  </td>
+                  <td className="text-center">
+                    <span className={prod.isActive !== false ? 'pro-badge-success' : 'pro-badge-neutral'}>
+                      {prod.isActive !== false ? 'Aktif' : 'Nonaktif'}
                     </span>
                   </td>
                   {['ADMIN', 'MANAGER'].includes(role) && (
                     <td>
                       <div className="flex justify-center gap-1">
-                        <button
-                          onClick={() => handleEditClick(prod)}
-                          className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors"
-                          title="Edit produk"
-                        >
-                          <Edit size={15} />
+                        <button onClick={() => handleEditClick(prod)}
+                          className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary-light transition-colors" title="Edit produk">
+                          <Edit size={14} />
                         </button>
                         {role === 'ADMIN' && (
-                          <button
-                            onClick={() => handleDeleteClick(prod)}
-                            className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-red-50 transition-colors"
-                            title="Hapus produk"
-                          >
-                            <Trash2 size={15} />
+                          <button onClick={() => handleDeleteClick(prod)}
+                            className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-red-50 transition-colors" title="Hapus produk">
+                            <Trash2 size={14} />
                           </button>
                         )}
                       </div>
@@ -353,7 +352,7 @@ export default function ProductsPage() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center py-12">
+                  <td colSpan={9} className="text-center py-12">
                     <div className="flex flex-col items-center">
                       <Package size={32} className="text-text-muted mb-2" />
                       <p className="text-text-muted font-medium">Tidak ada produk ditemukan</p>
@@ -372,8 +371,8 @@ export default function ProductsPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-lg animate-scale-in overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-card-border">
-              <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-                <Edit size={18} className="text-primary" /> Edit Produk
+              <h2 className="section-title flex items-center gap-2">
+                <Edit size={16} className="text-primary" /> Edit Produk
               </h2>
               <button
                 onClick={() => setIsEditModalOpen(false)}
@@ -446,42 +445,55 @@ export default function ProductsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">Harga (Rp)</label>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Harga Jual (Rp)</label>
                   {role === 'MANAGER' ? (
                     <div className="w-full text-sm py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium">
                       Rp {editingProduct.price.toLocaleString('id-ID')}
                     </div>
                   ) : (
-                    <input
-                      type="number"
-                      value={editingProduct.price}
+                    <input type="number" value={editingProduct.price} min={0} required
                       onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
-                      className="pro-input"
-                      required
-                      min={0}
-                    />
+                      className="pro-input" />
                   )}
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Harga Beli (Rp)</label>
+                  <input type="number" value={editingProduct.buyPrice ?? 0} min={0}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, buyPrice: Number(e.target.value) })}
+                    className="pro-input" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Satuan</label>
+                  <input type="text" value={editingProduct.unit ?? 'pcs'}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, unit: e.target.value })}
+                    className="pro-input" placeholder="pcs, botol, kg..." />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Stok Minimum</label>
+                  <input type="number" value={editingProduct.minStock ?? 10} min={0}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, minStock: Number(e.target.value) })}
+                    className="pro-input" />
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-text-primary mb-2">Stok Global</label>
-                  <input
-                    type="number"
-                    value={editingProduct.stock}
+                  <input type="number" value={editingProduct.stock} min={0} required
                     onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
-                    className="pro-input"
-                    required
-                    min={0}
-                  />
+                    className="pro-input" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Status</label>
+                  <select value={editingProduct.isActive !== false ? 'active' : 'inactive'}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, isActive: e.target.value === 'active' })}
+                    className="pro-select w-full">
+                    <option value="active">Aktif</option>
+                    <option value="inactive">Nonaktif</option>
+                  </select>
                 </div>
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-card-border">
-                <button type="button" onClick={() => setIsEditModalOpen(false)} className="pro-button-secondary flex-1">
-                  Batal
-                </button>
-                <button type="submit" className="pro-button-primary flex-1">
-                  <Save size={16} /> Simpan Perubahan
-                </button>
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="pro-button-secondary flex-1">Batal</button>
+                <button type="submit" className="pro-button-primary flex-1"><Save size={16} /> Simpan Perubahan</button>
               </div>
             </form>
           </div>
@@ -496,7 +508,7 @@ export default function ProductsPage() {
               <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
                 <AlertTriangle size={28} className="text-danger" />
               </div>
-              <h2 className="text-lg font-semibold text-text-primary mb-2">Hapus Produk?</h2>
+              <h2 className="section-title">Hapus Produk?</h2>
               <p className="text-sm text-text-muted mb-1">
                 Anda akan menghapus produk berikut secara permanen:
               </p>
@@ -541,8 +553,8 @@ export default function ProductsPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-lg animate-scale-in overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-card-border">
-              <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-                <Plus size={18} className="text-primary" /> Tambah Produk Baru
+              <h2 className="section-title flex items-center gap-2">
+                <Plus size={16} className="text-primary" /> Tambah Produk Baru
               </h2>
               <button
                 onClick={() => setIsAddModalOpen(false)}
@@ -599,28 +611,43 @@ export default function ProductsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">Harga (Rp)</label>
-                  <input
-                    type="number"
-                    value={newProduct.price || ''}
+                  <label className="block text-sm font-medium text-text-primary mb-2">Harga Jual (Rp)</label>
+                  <input type="number" value={newProduct.price || ''} min={0} required
                     onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
-                    placeholder="0"
-                    className="pro-input"
-                    required
-                    min={0}
-                  />
+                    placeholder="0" className="pro-input" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Harga Beli (Rp)</label>
+                  <input type="number" value={newProduct.buyPrice || ''} min={0}
+                    onChange={(e) => setNewProduct({ ...newProduct, buyPrice: Number(e.target.value) })}
+                    placeholder="0" className="pro-input" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Satuan</label>
+                  <input type="text" value={newProduct.unit || 'pcs'}
+                    onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}
+                    placeholder="pcs, botol, kg..." className="pro-input" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Stok Minimum</label>
+                  <input type="number" value={newProduct.minStock ?? 10} min={0}
+                    onChange={(e) => setNewProduct({ ...newProduct, minStock: Number(e.target.value) })}
+                    className="pro-input" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-primary mb-2">Stok Awal</label>
-                  <input
-                    type="number"
-                    value={newProduct.stock || ''}
+                  <input type="number" value={newProduct.stock || ''} min={0} required
                     onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
-                    placeholder="0"
-                    className="pro-input"
-                    required
-                    min={0}
-                  />
+                    placeholder="0" className="pro-input" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Status</label>
+                  <select value={newProduct.isActive !== false ? 'active' : 'inactive'}
+                    onChange={(e) => setNewProduct({ ...newProduct, isActive: e.target.value === 'active' })}
+                    className="pro-select w-full">
+                    <option value="active">Aktif</option>
+                    <option value="inactive">Nonaktif</option>
+                  </select>
                 </div>
               </div>
 
@@ -642,8 +669,8 @@ export default function ProductsPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-sm animate-scale-in overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-card-border">
-              <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-                <Plus size={18} className="text-primary" /> Kategori Baru
+              <h2 className="section-title flex items-center gap-2">
+                <Plus size={16} className="text-primary" /> Kategori Baru
               </h2>
               <button
                 onClick={() => setIsAddCategoryModalOpen(false)}

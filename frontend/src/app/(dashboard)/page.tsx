@@ -72,10 +72,10 @@ export default function DashboardHome() {
     <div className="space-y-8 relative z-10">
       {/* Page Header (Moved above columns for alignment) */}
       <div className="mb-2">
-        <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
+        <h1 className="page-title">
           Dashboard {isAdmin ? 'Pusat' : 'Cabang Depok'}
         </h1>
-        <p className="text-sm text-text-secondary mt-1 font-medium">
+        <p className="page-subtitle">
           {isAdmin ? 'Ringkasan performa bisnis dari seluruh cabang hari ini' : 'Ringkasan aktivitas dan performa toko hari ini'}
         </p>
       </div>
@@ -88,18 +88,18 @@ export default function DashboardHome() {
           {/* Card 1: Penjualan */}
           <div className="pro-stat-card before:bg-orange-500 group relative overflow-hidden">
             <div className="flex items-center justify-between mb-8 relative z-10">
-              <span className="text-[13px] font-black text-text-secondary uppercase tracking-widest opacity-80">Penjualan Hari Ini</span>
+              <span className="overline">Penjualan Hari Ini</span>
               <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30 group-hover:rotate-12 transition-all duration-500">
                 <TrendingUp size={20} />
               </div>
             </div>
             <div className="relative z-10">
-              <p className="text-3xl font-black text-text-primary tracking-tighter">Rp {stats.todaySales.toLocaleString('id-ID')}</p>
+              <p className="stat-number">Rp {stats.todaySales.toLocaleString('id-ID')}</p>
               <div className="flex items-center gap-2 mt-5">
                 <span className="px-2.5 py-1 rounded-xl bg-orange-50 text-orange-600 text-[11px] font-black flex items-center gap-1 border border-orange-100/50">
                   <ArrowUpRight size={14} /> +12.5%
                 </span>
-                <span className="text-[11px] text-text-muted font-bold">vs kemarin</span>
+                <span className="text-xs text-text-muted">vs kemarin</span>
               </div>
             </div>
           </div>
@@ -107,21 +107,21 @@ export default function DashboardHome() {
           {/* Card 2: Transaksi */}
           <div className="pro-stat-card before:bg-amber-500 group relative overflow-hidden">
             <div className="flex items-center justify-between mb-8 relative z-10">
-              <span className="text-[13px] font-black text-text-secondary uppercase tracking-widest opacity-80">Total Transaksi</span>
+              <span className="overline">Total Transaksi</span>
               <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30 group-hover:rotate-12 transition-all duration-500">
                 <ShoppingBag size={20} />
               </div>
             </div>
             <div className="relative z-10">
               <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-black text-text-primary tracking-tighter">{stats.totalTransactions}</p>
-                <span className="text-sm font-black text-text-muted uppercase tracking-widest opacity-60">transaksi</span>
+                <p className="stat-number">{stats.totalTransactions}</p>
+                <span className="text-xs text-text-muted font-medium uppercase tracking-wide">transaksi</span>
               </div>
               <div className="flex items-center gap-2 mt-5">
                 <span className="px-2.5 py-1 rounded-xl bg-amber-50 text-amber-600 text-[11px] font-black flex items-center gap-1 border border-amber-100/50">
                   <ArrowUpRight size={14} /> +5.2%
                 </span>
-                <span className="text-[11px] text-text-muted font-bold">vs kemarin</span>
+                <span className="text-xs text-text-muted">vs kemarin</span>
               </div>
             </div>
           </div>
@@ -129,15 +129,15 @@ export default function DashboardHome() {
           {/* Card 3: Stok Menipis */}
           <div className="pro-stat-card before:bg-rose-500 group relative overflow-hidden">
             <div className="flex items-center justify-between mb-8 relative z-10">
-              <span className="text-[13px] font-black text-text-secondary uppercase tracking-widest opacity-80">Peringatan Stok</span>
+              <span className="overline">Peringatan Stok</span>
               <div className="w-12 h-12 rounded-2xl bg-rose-500 flex items-center justify-center text-white shadow-lg shadow-rose-500/30 group-hover:rotate-12 transition-all duration-500">
                 <AlertTriangle size={20} />
               </div>
             </div>
             <div className="relative z-10">
               <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-black text-text-primary tracking-tighter">{stats.lowStockCount}</p>
-                <span className="text-sm font-black text-text-muted uppercase tracking-widest opacity-60">produk tipis</span>
+                <p className="stat-number">{stats.lowStockCount}</p>
+                <span className="text-xs text-text-muted font-medium uppercase tracking-wide">produk tipis</span>
               </div>
               <div className="mt-5">
                 <span className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 text-[11px] font-black uppercase tracking-wider border border-rose-100/50 animate-pulse">
@@ -152,9 +152,9 @@ export default function DashboardHome() {
           {/* Aktivitas Terbaru (Dipindahkan dari Sidebar) */}
           <div className="pro-card h-full flex flex-col relative overflow-hidden">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-black text-text-primary flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
-                  <History size={20} />
+              <h2 className="section-title flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
+                  <History size={18} />
                 </div>
                 Aktivitas Terbaru
               </h2>
@@ -173,8 +173,8 @@ export default function DashboardHome() {
                       <Icon size={20} />
                     </div>
                     <div className="flex-1 pt-1">
-                      <p className="text-[15px] font-bold text-text-primary leading-snug group-hover:text-primary transition-colors cursor-default">{activity.text}</p>
-                      <p className="text-[11px] text-text-muted font-black mt-1.5 uppercase tracking-widest opacity-70">{activity.time}</p>
+                      <p className="text-sm font-semibold text-text-primary leading-snug group-hover:text-primary transition-colors cursor-default">{activity.text}</p>
+                      <p className="text-xs text-text-muted mt-1 uppercase tracking-wider">{activity.time}</p>
                     </div>
                   </div>
                 );
@@ -193,9 +193,9 @@ export default function DashboardHome() {
           {/* Produk Terlaris (List) */}
           <div className="pro-card h-full flex flex-col">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-black text-text-primary flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
-                  <ShoppingBag size={20} />
+              <h2 className="section-title flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
+                  <ShoppingBag size={18} />
                 </div>
                 Produk Terlaris
               </h2>
@@ -210,8 +210,8 @@ export default function DashboardHome() {
                         <Icon size={22} />
                       </div>
                       <div>
-                        <p className="text-[15px] font-bold text-text-primary group-hover:text-orange-600 transition-colors">{item.name}</p>
-                        <p className="text-[11px] text-text-muted font-black uppercase tracking-widest mt-0.5 opacity-60">{item.sales} unit terjual</p>
+                        <p className="text-sm font-semibold text-text-primary group-hover:text-orange-600 transition-colors">{item.name}</p>
+                        <p className="text-xs text-text-muted uppercase tracking-wide mt-0.5">{item.sales} unit terjual</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -238,7 +238,7 @@ export default function DashboardHome() {
             <Target size={180} />
           </div>
           <div className="relative z-10">
-            <h3 className="text-[13px] font-black text-text-muted uppercase tracking-[0.2em] mb-8 opacity-70">Target Penjualan Bulanan</h3>
+            <h3 className="overline mb-8">Target Penjualan Bulanan</h3>
             <div className="flex items-center justify-center py-10">
               <div className="relative w-48 h-48">
                 {/* Simple SVG Circular Progress */}
@@ -266,8 +266,8 @@ export default function DashboardHome() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-black text-text-primary tracking-tighter">72%</span>
-                  <span className="text-[11px] font-black text-text-muted uppercase tracking-widest mt-1 opacity-60">Tercapai</span>
+                  <span className="stat-number text-[2.25rem]">72%</span>
+                  <span className="overline mt-1.5">Tercapai</span>
                 </div>
               </div>
             </div>
@@ -305,10 +305,10 @@ export default function DashboardHome() {
                 <div key={i} className="p-5 rounded-3xl border border-slate-100/60 bg-white hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="text-[15px] font-black text-text-primary">{branch.name}</p>
-                      <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mt-1 opacity-60">{branch.id}</p>
+                      <p className="text-sm font-semibold text-text-primary">{branch.name}</p>
+                      <p className="text-xs text-text-muted uppercase tracking-wider mt-0.5">{branch.id}</p>
                     </div>
-                    <p className="text-[15px] font-black text-orange-600">{branch.sales}</p>
+                    <p className="text-sm font-bold text-orange-600">{branch.sales}</p>
                   </div>
                   <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div className={`h-full ${branch.color} rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(249,115,22,0.3)]`} style={{ width: `${branch.pct}%` }}></div>
