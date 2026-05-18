@@ -21,6 +21,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = (label: string | null) => {
+    if (!label) return;
+    setCollapsedGroups(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
   useEffect(() => {
     const savedRole = localStorage.getItem('pos_role');
@@ -141,17 +147,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {navGroups.map((group, gi) => {
             const items = group.items.filter(i => i.roles.includes(role!));
             if (!items.length) return null;
+            const isGroupCollapsed = group.label && collapsedGroups[group.label];
+
             return (
               <div key={gi} className={gi > 0 ? 'mt-4' : ''}>
                 {group.label && !isCollapsed && (
-                  <p className="px-3 pt-2 pb-1.5 text-[9.5px] font-bold text-white/60 uppercase tracking-[0.12em]">
-                    {group.label}
-                  </p>
+                  <button 
+                    onClick={() => toggleGroup(group.label)}
+                    className="w-full flex items-center justify-between px-3 pt-2 pb-1.5 hover:bg-white/5 rounded-lg transition-colors group/btn mb-1"
+                  >
+                    <p className="text-[9.5px] font-bold text-white/60 group-hover/btn:text-white/90 uppercase tracking-[0.12em] transition-colors">
+                      {group.label}
+                    </p>
+                    <ChevronDown size={14} className={`text-white/40 group-hover/btn:text-white/70 transition-all duration-300 ${isGroupCollapsed ? '-rotate-90' : ''}`} />
+                  </button>
                 )}
                 {group.label && isCollapsed && (
                   <div className="w-full border-t border-white/20 my-3" />
                 )}
-                <div className="space-y-1">
+                <div className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${isGroupCollapsed && !isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1000px] opacity-100'}`}>
                   {items.map(item => <NavLink key={item.href} {...item} />)}
                 </div>
               </div>

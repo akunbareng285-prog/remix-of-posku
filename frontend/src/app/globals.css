@@ -327,27 +327,27 @@ h1, h2, h3, h4, h5, h6 {
 
   /* --- Badges --- */
   .pro-badge {
-    @apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold;
+    @apply inline-flex items-center text-xs font-bold tracking-wide;
   }
 
   .pro-badge-success {
-    @apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70;
+    @apply inline-flex items-center text-xs font-bold tracking-wide text-emerald-600 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:mr-1.5 before:bg-emerald-500;
   }
 
   .pro-badge-warning {
-    @apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/70;
+    @apply inline-flex items-center text-xs font-bold tracking-wide text-amber-600 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:mr-1.5 before:bg-amber-500;
   }
 
   .pro-badge-danger {
-    @apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/70;
+    @apply inline-flex items-center text-xs font-bold tracking-wide text-rose-600 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:mr-1.5 before:bg-rose-500;
   }
 
   .pro-badge-info {
-    @apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/70;
+    @apply inline-flex items-center text-xs font-bold tracking-wide text-indigo-600 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:mr-1.5 before:bg-indigo-500;
   }
 
   .pro-badge-neutral {
-    @apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/70;
+    @apply inline-flex items-center text-xs font-bold tracking-wide text-slate-500 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:mr-1.5 before:bg-slate-400;
   }
 
   /* --- Tables --- */
