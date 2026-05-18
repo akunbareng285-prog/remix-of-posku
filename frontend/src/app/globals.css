@@ -90,12 +90,14 @@ h1, h2, h3, h4, h5, h6 {
 
 /* H1 — One per page. Use for page-level titles. */
 .page-title {
-  font-size: 1.875rem;   /* 30px */
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-  color: var(--text-primary);
+  font-size: 2.125rem;   /* 34px */
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--foreground);
 }
+
+
 
 /* H2 — Major sections within a page */
 .section-title {
@@ -125,11 +127,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Subtitle / description below a page title */
 .page-subtitle {
-  font-size: 0.875rem;   /* 14px */
+  font-size: 0.9375rem;   /* 15px */
   color: var(--text-secondary);
-  line-height: 1.6;
-  font-weight: 400;
-  margin-top: 0.25rem;
+  line-height: 1.5;
+  font-weight: 500;
+  margin-top: 0.375rem;
+  margin-bottom: 2rem;
 }
 
 /* Large metric / stat number */
@@ -142,8 +145,8 @@ h1, h2, h3, h4, h5, h6 {
   font-feature-settings: 'tnum' 1;
 }
 
-/* Small all-caps overline label */
-.overline {
+/* Small all-caps label */
+.pro-label {
   font-size: 0.6875rem;  /* 11px */
   font-weight: 600;
   letter-spacing: 0.09em;
@@ -158,9 +161,6 @@ h1, h2, h3, h4, h5, h6 {
 /* Standard page wrapper */
 .page-container {
   width: 100%;
-  max-width: 1440px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* Consistent vertical spacing between page blocks */
@@ -237,29 +237,23 @@ h1, h2, h3, h4, h5, h6 {
 
   /* --- Premium Cards --- */
   .pro-card {
-    @apply bg-white rounded-[1.75rem] p-7 border border-slate-200/50 transition-all duration-500 relative overflow-hidden;
-    box-shadow: 0 8px 32px -8px rgba(0,0,0,0.09), 0 0 1px rgba(0,0,0,0.04);
-  }
-
-  .pro-card::before {
-    content: "";
-    @apply absolute top-0 inset-x-0 h-[4px] bg-primary z-20 rounded-t-[1.75rem];
+    @apply bg-white rounded-2xl p-6 border border-slate-200 transition-all duration-300 relative overflow-hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 14px rgba(0,0,0,0.03);
   }
 
   .pro-card:hover {
-    @apply -translate-y-1.5 border-primary/20;
-    box-shadow: 0 24px 56px -12px rgba(0,0,0,0.13), 0 0 32px rgba(0,0,0,0.04);
+    @apply border-slate-300/70;
+    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.06);
   }
 
   .pro-card-elevated {
-    @apply bg-white border border-slate-200/80 rounded-2xl p-6 transition-all duration-300;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    @apply bg-white border border-slate-200 rounded-2xl p-5 transition-all duration-300;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 14px rgba(0,0,0,0.03);
   }
 
   .pro-card-elevated:hover {
-    @apply border-slate-300;
-    box-shadow: 0 12px 36px rgba(0,0,0,0.11);
-    transform: translateY(-3px);
+    @apply border-slate-300/70;
+    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.06);
   }
 
   /* --- Buttons --- */
@@ -373,7 +367,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .pro-table td {
-    @apply px-5 py-4 text-sm text-text-primary;
+    @apply px-5 py-4 text-sm text-text-primary align-middle;
   }
 
   .pro-table tbody tr {
@@ -382,18 +376,13 @@ h1, h2, h3, h4, h5, h6 {
 
   /* --- Stat Cards --- */
   .pro-stat-card {
-    @apply relative overflow-hidden bg-white rounded-[1.75rem] p-6 border border-slate-200/50 transition-all duration-400;
-    box-shadow: 0 8px 32px -8px rgba(0,0,0,0.09), 0 0 1px rgba(0,0,0,0.04);
-  }
-
-  .pro-stat-card::before {
-    content: "";
-    @apply absolute top-0 inset-x-0 h-[4px] z-20 rounded-t-[1.75rem];
+    @apply relative overflow-hidden bg-white rounded-2xl p-6 border border-slate-200 transition-all duration-300;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 14px rgba(0,0,0,0.03);
   }
 
   .pro-stat-card:hover {
-    @apply -translate-y-1.5 border-slate-300/40;
-    box-shadow: 0 24px 56px -12px rgba(0,0,0,0.13), 0 0 32px rgba(0,0,0,0.04);
+    @apply border-slate-300/70;
+    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.06);
   }
 }
 

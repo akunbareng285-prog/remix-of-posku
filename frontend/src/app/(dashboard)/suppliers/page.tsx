@@ -76,7 +76,7 @@ export default function SuppliersPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="page-title">Supplier</h1>
+          <h1 className="page-title">Data <span className="text-primary">Supplier</span></h1>
           <p className="page-subtitle">{suppliers.length} supplier terdaftar</p>
         </div>
         <button onClick={openAdd} className="pro-button-primary">

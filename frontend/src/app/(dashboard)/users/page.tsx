@@ -80,7 +80,7 @@ export default function UsersPage() {
       <div className="space-y-6 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="page-title">Pegawai &amp; Hak Akses</h1>
+            <h1 className="page-title">Pegawai &amp; <span className="text-primary">Akses</span></h1>
             <p className="page-subtitle">{users.length} pegawai terdaftar</p>
           </div>
           <button className="pro-button-primary">

@@ -118,7 +118,7 @@ export default function TransferStokPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="page-title">Transfer Stok</h1>
+        <h1 className="page-title">Transfer <span className="text-primary">Stok</span></h1>
         <p className="page-subtitle">Pindahkan stok antar lokasi toko / gudang</p>
       </div>
 

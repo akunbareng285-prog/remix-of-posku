@@ -134,7 +134,7 @@ export default function StoresPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="page-title">Manajemen Lokasi</h1>
+          <h1 className="page-title">Manajemen <span className="text-primary">Lokasi</span></h1>
           <p className="page-subtitle">{stores.length} toko · {warehouses.length} gudang terdaftar</p>
         </div>
         <button onClick={openAdd} className="pro-button-primary">

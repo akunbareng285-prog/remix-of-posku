@@ -14,7 +14,10 @@ interface Product {
   stock: number;
   category: string;
   image: string;
+  unit?: string;
 }
+
+interface Location { id: string; name: string; type: string; }
 
 interface CartItem extends Product {
   quantity: number;
@@ -45,6 +48,9 @@ export default function PosPage() {
   const [lastTransaction, setLastTransaction] = useState<{ items: CartItem[]; total: number; date: string; id: string; paymentMethod: string } | null>(null);
 
   const [categories, setCategories] = useState(['SEMUA', 'MAKANAN', 'MINUMAN', 'SNACK']);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [stockMap, setStockMap] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const role = localStorage.getItem('pos_role');
@@ -64,9 +70,20 @@ export default function PosPage() {
     
     // Load categories from localStorage
     const savedCategories = localStorage.getItem('pos_categories');
-    if (savedCategories) {
-      setCategories(['SEMUA', ...JSON.parse(savedCategories)]);
-    }
+    if (savedCategories) setCategories(['SEMUA', ...JSON.parse(savedCategories)]);
+
+    // Load locations
+    const savedLocs = localStorage.getItem('pos_locations');
+    const locs: Location[] = savedLocs ? JSON.parse(savedLocs) : [
+      { id: 'LOC-1', name: 'Gudang Utama', type: 'warehouse' },
+      { id: 'LOC-2', name: 'Toko Pusat', type: 'store' },
+      { id: 'LOC-3', name: 'Cabang Depok', type: 'store' },
+    ];
+    setLocations(locs.filter(l => (l as any).isActive !== false));
+
+    // Load stock map
+    const sm = localStorage.getItem('pos_stock_map');
+    if (sm) setStockMap(JSON.parse(sm));
   }, [router]);
 
   const handleLogout = () => {
@@ -84,13 +101,19 @@ export default function PosPage() {
     return matchesSearch && matchesCategory;
   });
 
+  const getAvailableStock = (product: Product) => {
+    if (selectedLocation) {
+      return stockMap[`${product.id}-${selectedLocation.id}`] ?? product.stock;
+    }
+    return product.stock;
+  };
+
   const addToCart = (product: Product) => {
-    // Check if stock is available
     const existingInCart = cart.find(item => item.id === product.id);
     const quantityInCart = existingInCart ? existingInCart.quantity : 0;
-    
-    if (product.stock <= quantityInCart) {
-      alert(`Stok produk "${product.name}" habis!`);
+    const available = getAvailableStock(product);
+    if (available <= quantityInCart) {
+      alert(`Stok produk "${product.name}" di ${selectedLocation?.name || 'lokasi ini'} habis!`);
       return;
     }
 
@@ -149,7 +172,19 @@ export default function PosPage() {
     });
 
     localStorage.setItem('pos_products', JSON.stringify(updatedProducts));
-    setProducts(updatedProducts); // Update local state for immediate feedback
+    setProducts(updatedProducts);
+
+    // Also update stock_map for the selected location
+    if (selectedLocation) {
+      const updated = { ...stockMap };
+      cart.forEach(item => {
+        const key = `${item.id}-${selectedLocation.id}`;
+        const cur = updated[key] ?? item.stock;
+        updated[key] = Math.max(0, cur - item.quantity);
+      });
+      setStockMap(updated);
+      localStorage.setItem('pos_stock_map', JSON.stringify(updated));
+    }
     
     // 3. Save Transaction to localStorage
     const newTransaction = {
@@ -164,7 +199,7 @@ export default function PosPage() {
       })),
       total: total,
       cashier: userName,
-      location: userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok',
+      location: selectedLocation?.name || (userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok'),
       paymentMethod: paymentMethod,
       timestamp: Date.now()
     };
@@ -178,7 +213,7 @@ export default function PosPage() {
       date: transactionDate,
       product: item.name,
       qty: item.quantity,
-      from: userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok',
+      from: selectedLocation?.name || (userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok'),
       to: 'Pelanggan (Penjualan)',
       type: 'sale',
       status: 'Selesai',
@@ -201,6 +236,45 @@ export default function PosPage() {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+
+      {/* ===== LOCATION SELECTION SCREEN ===== */}
+      {!selectedLocation && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gradient-to-br from-primary to-amber-600 p-6">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <img src="/logo_white.png" alt="POS Logo" className="h-16 w-auto object-contain shrink-0" />
+                <div className="text-left hidden sm:block">
+                  <p className="text-3xl font-black text-white tracking-tight leading-none">POS System</p>
+                  <p className="text-sm text-white/70 font-bold tracking-[0.15em] uppercase mt-1">Multi-Location</p>
+                </div>
+              </div>
+              <h1 className="text-2xl font-bold text-white">Pilih Lokasi Kasir</h1>
+              <p className="text-white/70 text-sm mt-1">Halo, {userName}! Pilih lokasi toko untuk memulai transaksi</p>
+            </div>
+            <div className="space-y-3">
+              {locations.map(loc => (
+                <button key={loc.id} onClick={() => setSelectedLocation(loc)}
+                  className="w-full flex items-center gap-4 px-5 py-4 bg-white/15 hover:bg-white rounded-2xl border-2 border-white/30 hover:border-white text-left transition-all duration-200 group">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 group-hover:bg-primary/10 flex items-center justify-center shrink-0">
+                    <Store size={20} className="text-white group-hover:text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-white group-hover:text-text-primary text-base">{loc.name}</p>
+                    <p className="text-white/60 group-hover:text-text-muted text-xs capitalize">{loc.type === 'store' ? 'Toko' : 'Gudang'}</p>
+                  </div>
+                  <div className="text-white/40 group-hover:text-primary">
+                    <ArrowLeft size={18} className="rotate-180" />
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-6 text-center">
+              <Link href="/" className="text-white/60 hover:text-white text-sm transition-colors">← Kembali ke Dashboard</Link>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Left: Cart Panel */}
       <div className="w-[380px] min-w-[380px] bg-white border-r border-card-border flex flex-col">
         {/* Cart Header */}
@@ -216,7 +290,13 @@ export default function PosPage() {
           )}
           <div className="flex-1">
             <h2 className="text-base font-semibold text-text-primary">Transaksi</h2>
-            <p className="text-xs text-text-muted">Kasir: {userName} • {userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok'}</p>
+            <p className="text-xs text-text-muted flex items-center gap-1">
+              {userName} •
+              <button onClick={() => { setSelectedLocation(null); setCart([]); }}
+                className="text-primary font-semibold hover:underline">
+                {selectedLocation?.name || 'Pilih Lokasi'}
+              </button>
+            </p>
           </div>
           <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg">
             <ShoppingCart size={14} className="text-text-muted" />
@@ -417,7 +497,15 @@ export default function PosPage() {
                   <h3 className="text-sm font-semibold text-text-primary line-clamp-2 leading-snug mb-2">{product.name}</h3>
                   <div className="flex justify-between items-center mt-auto pt-3 border-t border-card-border">
                     <span className="text-base font-bold text-primary">Rp {product.price.toLocaleString('id-ID')}</span>
-                    <span className="pro-badge-neutral text-[10px]">Stok: {product.stock}</span>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg ${
+                      getAvailableStock(product) <= 0
+                        ? 'bg-red-100 text-red-600'
+                        : getAvailableStock(product) <= 5
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      Stok: {getAvailableStock(product)}
+                    </span>
                   </div>
                 </button>
               ))

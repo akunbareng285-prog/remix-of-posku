@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShoppingCart, Package, ArrowRightLeft,
   FileBarChart, Settings, LogOut, Store, Users, Bell,
   Search, ChevronDown, Menu, X, Layers, PackageCheck,
-  Truck, Tag, Receipt, MapPin
+  Truck, Tag, Receipt, MapPin, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
@@ -20,6 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [userName, setUserName] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const savedRole = localStorage.getItem('pos_role');
@@ -60,6 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       label: 'Laporan',
       items: [
         { href: '/transactions', icon: Receipt, label: 'Transaksi', roles: ['ADMIN', 'MANAGER'] },
+        { href: '/mutations', icon: ArrowRightLeft, label: 'Mutasi Stok', roles: ['ADMIN', 'MANAGER'] },
         { href: '/reports', icon: FileBarChart, label: 'Laporan', roles: ['ADMIN', 'MANAGER'] },
         { href: '/promotions', icon: Tag, label: 'Promosi', roles: ['ADMIN'] },
       ]
@@ -81,15 +83,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <Link
       href={href}
       onClick={() => setSidebarOpen(false)}
-      className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 group
+      className={`flex items-center gap-3 rounded-xl text-[13px] font-semibold transition-all duration-200 group relative
         ${isActive(href)
           ? 'bg-white text-primary shadow-md shadow-black/10'
           : 'text-white/80 hover:text-white hover:bg-white/10'
-        }`}
+        }
+        ${isCollapsed ? 'w-10 h-10 justify-center mx-auto' : 'px-3.5 py-2.5 w-full'}
+      `}
+      title={isCollapsed ? label : undefined}
     >
-      <Icon size={17} className={`shrink-0 transition-colors ${isActive(href) ? 'text-primary' : 'text-white/60 group-hover:text-white'}`} />
-      <span className="truncate">{label}</span>
-      {isActive(href) && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
+      <Icon size={isCollapsed ? 18 : 17} className={`shrink-0 transition-all ${isActive(href) ? 'text-primary' : 'text-white/60 group-hover:text-white'}`} />
+      {!isCollapsed && (
+        <>
+          <span className="truncate">{label}</span>
+          {isActive(href) && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
+        </>
+      )}
     </Link>
   );
 
@@ -104,38 +113,45 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-40 lg:z-10
-        w-[240px] bg-primary flex flex-col shrink-0
+        ${isCollapsed ? 'w-[88px]' : 'w-[240px]'} bg-primary flex flex-col shrink-0
         border-r border-primary-hover shadow-[4px_0_24px_rgba(255,140,0,0.15)]
-        transition-transform duration-300 ease-out text-white
+        transition-all duration-300 ease-out text-white
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
-        <div className="flex h-14 items-center gap-3 px-4 border-b border-white/20 shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-md">
-            <ShoppingCart size={16} className="text-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-extrabold text-white tracking-tight leading-tight">POS System</p>
-            <p className="text-[9px] text-white/60 font-semibold tracking-widest uppercase">Multi-Location</p>
-          </div>
-          <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden p-1.5 bg-white/10 rounded-lg hover:bg-white/20">
+        <div className={`flex h-[88px] items-center ${isCollapsed ? 'justify-center' : 'px-6 gap-3.5'} shrink-0 relative`}>
+          {isCollapsed ? (
+            <img src="/logo_white.png" alt="Logo" className="w-12 h-12 object-contain" />
+          ) : (
+            <>
+              <img src="/logo_white.png" alt="Logo" className="h-12 w-auto object-contain shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-black text-white tracking-tight leading-tight truncate">POS System</p>
+                <p className="text-[11px] text-white/70 font-bold tracking-[0.15em] uppercase truncate mt-0.5">Multi-Location</p>
+              </div>
+            </>
+          )}
+          <button onClick={() => setSidebarOpen(false)} className="absolute right-4 lg:hidden p-1.5 bg-white/10 rounded-lg hover:bg-white/20">
             <X size={15} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-0.5">
+        <nav className={`flex-1 overflow-y-auto space-y-1 ${isCollapsed ? 'px-3 py-4' : 'px-4 py-4'}`}>
           {navGroups.map((group, gi) => {
             const items = group.items.filter(i => i.roles.includes(role!));
             if (!items.length) return null;
             return (
-              <div key={gi} className={gi > 0 ? 'mt-3' : ''}>
-                {group.label && (
-                  <p className="px-3 pt-2 pb-1.5 text-[9.5px] font-bold text-white/40 uppercase tracking-[0.12em]">
+              <div key={gi} className={gi > 0 ? 'mt-4' : ''}>
+                {group.label && !isCollapsed && (
+                  <p className="px-3 pt-2 pb-1.5 text-[9.5px] font-bold text-white/60 uppercase tracking-[0.12em]">
                     {group.label}
                   </p>
                 )}
-                <div className="space-y-0.5">
+                {group.label && isCollapsed && (
+                  <div className="w-full border-t border-white/20 my-3" />
+                )}
+                <div className="space-y-1">
                   {items.map(item => <NavLink key={item.href} {...item} />)}
                 </div>
               </div>
@@ -144,25 +160,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* User */}
-        <div className="p-3 border-t border-white/20 bg-black/10 relative shrink-0">
+        <div className={`p-4 relative shrink-0 ${isCollapsed ? 'flex justify-center' : ''}`}>
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-all text-left"
+            className={`flex items-center ${isCollapsed ? 'justify-center p-0 w-10 h-10' : 'w-full gap-3 px-3.5 py-2.5'} rounded-xl bg-white/10 hover:bg-white/20 transition-all text-left`}
+            title={isCollapsed ? userName || '' : undefined}
           >
-            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-xs font-bold text-primary shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-xs font-bold text-primary shrink-0 shadow-sm">
               {userName?.substring(0, 2).toUpperCase() || 'AD'}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold truncate">{userName}</p>
-              <p className="text-[9px] text-white/60 font-semibold uppercase tracking-wider">{role}</p>
-            </div>
-            <ChevronDown size={13} className={`text-white/60 shrink-0 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+            {!isCollapsed && (
+              <>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold truncate">{userName}</p>
+                  <p className="text-[10px] text-white/70 font-semibold uppercase tracking-wider">{role}</p>
+                </div>
+                <ChevronDown size={14} className={`text-white/60 shrink-0 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+              </>
+            )}
           </button>
 
           {profileOpen && (
             <>
               <div className="fixed inset-0 z-[100]" onClick={() => setProfileOpen(false)} />
-              <div className="absolute bottom-[calc(100%+4px)] left-3 w-[214px] bg-white rounded-2xl border border-slate-100 shadow-xl py-2 z-[101] animate-scale-in">
+              <div className={`absolute bottom-[calc(100%+8px)] ${isCollapsed ? 'left-14' : 'left-4 right-4'} w-[214px] bg-white rounded-2xl border border-slate-100 shadow-xl py-2 z-[101] animate-scale-in`}>
                 <div className="px-4 py-3 border-b border-slate-100 mb-1">
                   <p className="text-sm font-bold text-text-primary">{userName}</p>
                   <p className="text-xs text-primary font-semibold uppercase tracking-wide mt-0.5">{role}</p>
@@ -180,7 +201,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex-1 flex flex-col overflow-hidden min-w-0 z-10">
         <header className="h-14 flex items-center justify-between px-5 lg:px-7 bg-white/60 backdrop-blur-xl border-b border-white shadow-sm z-20 shrink-0">
           <div className="flex items-center gap-3 flex-1">
-            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-xl transition-colors">
+            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-colors">
+              <Menu size={20} />
+            </button>
+            <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden lg:flex p-2 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-colors">
               <Menu size={20} />
             </button>
             <div className="relative hidden sm:block w-full max-w-sm">
@@ -203,7 +227,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="px-5 py-6 md:px-8 lg:px-10 xl:px-12 xl:py-8 max-w-[1440px] w-full pb-14">
+          <div className="px-5 py-6 md:px-8 lg:px-10 xl:px-12 xl:py-8 w-full pb-14">
             {children}
           </div>
         </main>

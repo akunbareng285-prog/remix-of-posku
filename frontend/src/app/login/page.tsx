@@ -72,13 +72,11 @@ export default function LoginPage() {
         <div className="w-full max-w-md animate-fade-in">
           {/* Brand */}
           <div className="mb-10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
-                <ShoppingCart size={20} className="text-white" />
-              </div>
+            <div className="flex items-center gap-4 mb-8">
+              <img src="/logo_color.png" alt="POS Logo" className="h-14 w-auto object-contain shrink-0" />
               <div>
-                <p className="text-base font-extrabold text-text-primary tracking-tight">POS System</p>
-                <p className="text-xs text-text-muted">Multi-Location</p>
+                <p className="text-2xl font-black text-text-primary tracking-tight leading-none">POS System</p>
+                <p className="text-xs text-text-muted font-bold tracking-[0.15em] uppercase mt-1">Multi-Location</p>
               </div>
             </div>
             <h1 className="text-[1.75rem] font-bold text-text-primary tracking-tight leading-tight">Selamat Datang 👋</h1>

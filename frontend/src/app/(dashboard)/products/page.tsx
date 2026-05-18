@@ -246,7 +246,7 @@ export default function ProductsPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="page-title">Produk Master</h1>
+            <h1 className="page-title">Produk <span className="text-primary">Master</span></h1>
             <p className="page-subtitle">{products.length} produk terdaftar</p>
           </div>
           {role === 'ADMIN' && (
@@ -261,9 +261,8 @@ export default function ProductsPage() {
           )}
         </div>
 
-        <div className="pro-card">
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
               <input
                 type="text"
@@ -304,7 +303,7 @@ export default function ProductsPage() {
                 <tr key={prod.id} className={prod.isActive === false ? 'opacity-50' : ''}>
                   <td>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 border border-card-border shrink-0 relative">
+                      <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-50 border border-slate-200 shadow-sm shrink-0 relative">
                         <Image src={prod.image} alt={prod.name} fill className="object-cover" sizes="40px" />
                       </div>
                       <div>
@@ -318,14 +317,14 @@ export default function ProductsPage() {
                   <td className="text-right font-semibold text-primary text-sm">Rp {prod.price.toLocaleString('id-ID')}</td>
                   <td className="text-right text-sm text-text-secondary">{prod.buyPrice ? `Rp ${prod.buyPrice.toLocaleString('id-ID')}` : '-'}</td>
                   <td className="text-center">
-                    <span className={`font-semibold text-sm ${
-                      prod.stock <= (prod.minStock ?? 10) ? 'text-danger' : 'text-text-primary'
-                    }`}>
-                      {prod.stock}
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className={`font-semibold text-sm ${prod.stock <= (prod.minStock ?? 10) ? 'text-rose-600' : 'text-text-primary'}`}>
+                        {prod.stock}
+                      </span>
                       {prod.stock <= (prod.minStock ?? 10) && (
-                        <span className="ml-1.5 pro-badge-warning text-[10px]">Low</span>
+                        <AlertTriangle size={16} className="text-amber-500" title="Stok Menipis (Low)" />
                       )}
-                    </span>
+                    </div>
                   </td>
                   <td className="text-center">
                     <span className={prod.isActive !== false ? 'pro-badge-success' : 'pro-badge-neutral'}>
@@ -362,7 +361,6 @@ export default function ProductsPage() {
               )}
             </tbody>
           </table>
-          </div>
         </div>
       </div>
 

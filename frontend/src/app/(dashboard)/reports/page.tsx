@@ -89,7 +89,7 @@ export default function ReportsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="page-title">Laporan</h1>
+          <h1 className="page-title">Laporan <span className="text-primary">Bisnis</span></h1>
           <p className="page-subtitle">Ringkasan performa bisnis Anda</p>
         </div>
         <button className="pro-button-secondary"><Download size={15} /> Export Excel</button>
@@ -105,13 +105,13 @@ export default function ReportsPage() {
         ].map(card => (
           <div key={card.label} className={`pro-stat-card ${card.bar} group relative overflow-hidden`}>
             <div className="flex items-center justify-between mb-5 relative z-10">
-              <span className="overline">{card.label}</span>
+              <span className="pro-label">{card.label}</span>
               <div className={`w-9 h-9 rounded-xl ${card.color} flex items-center justify-center text-white shrink-0`}>
                 <card.icon size={16} />
               </div>
             </div>
             <p className="text-lg font-bold text-text-primary truncate">{card.value}</p>
-            <p className="overline mt-2">{card.sub}</p>
+            <p className="pro-label mt-2">{card.sub}</p>
           </div>
         ))}
       </div>
@@ -122,7 +122,7 @@ export default function ReportsPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="section-title">Penjualan 7 Hari Terakhir</h3>
-              <p className="overline mt-1">Tren pendapatan harian</p>
+              <p className="pro-label mt-1">Tren pendapatan harian</p>
             </div>
           </div>
 
@@ -162,7 +162,7 @@ export default function ReportsPage() {
         <div className="pro-card flex flex-col">
           <div className="mb-6">
             <h3 className="section-title">Metode Pembayaran</h3>
-            <p className="overline mt-1">Distribusi metode bayar</p>
+            <p className="pro-label mt-1">Distribusi metode bayar</p>
           </div>
 
           {data.payMethods.length === 0 ? (

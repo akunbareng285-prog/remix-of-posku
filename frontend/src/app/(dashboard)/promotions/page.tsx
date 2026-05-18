@@ -91,7 +91,7 @@ export default function PromotionsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="page-title">Promosi</h1>
+          <h1 className="page-title">Diskon &amp; <span className="text-primary">Promosi</span></h1>
           <p className="page-subtitle">{promos.filter(p => p.isActive).length} promosi aktif dari {promos.length} total</p>
         </div>
         <button onClick={openAdd} className="pro-button-primary">

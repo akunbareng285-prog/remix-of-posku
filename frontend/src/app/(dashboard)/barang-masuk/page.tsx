@@ -112,7 +112,7 @@ export default function BarangMasukPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="page-title">Barang Masuk</h1>
+        <h1 className="page-title">Barang <span className="text-primary">Masuk</span></h1>
         <p className="page-subtitle">Catat penerimaan barang dari supplier</p>
       </div>
 

@@ -40,7 +40,7 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="page-title">Transaksi</h1>
+        <h1 className="page-title">Transaksi <span className="text-primary">Penjualan</span></h1>
         <p className="page-subtitle">Riwayat seluruh penjualan dari semua kasir</p>
       </div>
 
@@ -53,7 +53,7 @@ export default function TransactionsPage() {
         ].map(card => (
           <div key={card.label} className={`pro-stat-card ${card.badge}`}>
             <div className="flex items-center justify-between mb-4">
-              <span className="overline">{card.label}</span>
+              <span className="pro-label">{card.label}</span>
               <div className={`w-9 h-9 rounded-xl ${card.color} flex items-center justify-center text-white`}>
                 <card.icon size={17} />
               </div>

@@ -1,103 +1,189 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, ArrowRight, Plus, PackageSearch } from 'lucide-react';
+import { Search, ArrowRightLeft, PackageCheck, ShoppingBag, Filter } from 'lucide-react';
+
+type MutationType = 'all' | 'sale' | 'stock_in' | 'transfer';
+
+interface MutationRow {
+  id: string; date: string; type: 'sale' | 'stock_in' | 'transfer';
+  description: string; qty: number; location: string; ref?: string;
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  sale: 'Penjualan', stock_in: 'Barang Masuk', transfer: 'Transfer Stok',
+};
+const TYPE_BADGE: Record<string, string> = {
+  sale: 'pro-badge-warning', stock_in: 'pro-badge-success', transfer: 'pro-badge-info',
+};
+const TYPE_ICON: Record<string, React.ElementType> = {
+  sale: ShoppingBag, stock_in: PackageCheck, transfer: ArrowRightLeft,
+};
 
 export default function MutationsPage() {
+  const [mutations, setMutations] = useState<MutationRow[]>([]);
+  const [filter, setFilter] = useState<MutationType>('all');
   const [search, setSearch] = useState('');
-  const [mutations, setMutations] = useState<any[]>([]);
 
   useEffect(() => {
-    const savedMutations = JSON.parse(localStorage.getItem('pos_mutations') || '[]');
-    setMutations(savedMutations);
+    const rows: MutationRow[] = [];
+
+    // --- Sales from pos_mutations ---
+    const sales: any[] = JSON.parse(localStorage.getItem('pos_mutations') || '[]');
+    sales.forEach(m => {
+      rows.push({
+        id: m.id || `MUT-${Date.now()}`,
+        date: m.date || '-',
+        type: 'sale',
+        description: `${m.product} × ${m.qty}`,
+        qty: m.qty || 0,
+        location: m.from || '-',
+        ref: m.id,
+      });
+    });
+
+    // --- Stock In from pos_stock_in ---
+    const stockIns: any[] = JSON.parse(localStorage.getItem('pos_stock_in') || '[]');
+    stockIns.forEach(s => {
+      rows.push({
+        id: s.id,
+        date: s.date,
+        type: 'stock_in',
+        description: `${s.totalQty} item dari ${s.supplierName || 'Supplier'}`,
+        qty: s.totalQty,
+        location: s.locationName || '-',
+        ref: s.id,
+      });
+    });
+
+    // --- Transfers from pos_transfers ---
+    const transfers: any[] = JSON.parse(localStorage.getItem('pos_transfers') || '[]');
+    transfers.forEach(t => {
+      rows.push({
+        id: t.id,
+        date: t.date,
+        type: 'transfer',
+        description: `${t.totalQty} item: ${t.fromLocationName} → ${t.toLocationName}`,
+        qty: t.totalQty,
+        location: `${t.fromLocationName} → ${t.toLocationName}`,
+        ref: t.id,
+      });
+    });
+
+    // Sort by date descending (newest first)
+    rows.sort((a, b) => b.date.localeCompare(a.date));
+    setMutations(rows);
   }, []);
 
-  const filtered = mutations.filter((m) => m.product.toLowerCase().includes(search.toLowerCase()) || m.id.toLowerCase().includes(search.toLowerCase()));
+  const filtered = mutations.filter(m => {
+    const matchType = filter === 'all' || m.type === filter;
+    const matchSearch = m.description.toLowerCase().includes(search.toLowerCase()) ||
+      m.location.toLowerCase().includes(search.toLowerCase()) ||
+      m.id.toLowerCase().includes(search.toLowerCase());
+    return matchType && matchSearch;
+  });
+
+  const counts = {
+    all: mutations.length,
+    sale: mutations.filter(m => m.type === 'sale').length,
+    stock_in: mutations.filter(m => m.type === 'stock_in').length,
+    transfer: mutations.filter(m => m.type === 'transfer').length,
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="page-title">Mutasi Stok</h1>
-          <p className="page-subtitle">Riwayat perpindahan stok antar cabang</p>
-        </div>
-        <button className="pro-button-primary">
-          <Plus size={16} /> Buat Mutasi
-        </button>
+      <div>
+        <h1 className="page-title">Riwayat <span className="text-primary">Mutasi</span></h1>
+        <p className="page-subtitle">Log seluruh pergerakan stok — penjualan, barang masuk, dan transfer</p>
       </div>
 
-      <div className="pro-card">
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-            <input
-              type="text"
-              placeholder="Cari ID mutasi atau nama produk..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pro-input pl-10"
-            />
-          </div>
-          <select className="pro-select">
-            <option>Semua Status</option>
-            <option>Proses</option>
-            <option>Selesai</option>
-          </select>
-        </div>
+      {/* Type Filter Tabs */}
+      <div className="flex flex-wrap gap-2">
+        {([
+          { key: 'all', label: 'Semua', icon: Filter },
+          { key: 'sale', label: 'Penjualan', icon: ShoppingBag },
+          { key: 'stock_in', label: 'Barang Masuk', icon: PackageCheck },
+          { key: 'transfer', label: 'Transfer', icon: ArrowRightLeft },
+        ] as const).map(tab => (
+          <button key={tab.key} onClick={() => setFilter(tab.key)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-all ${
+              filter === tab.key
+                ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
+                : 'border-slate-200 bg-white text-text-secondary hover:border-primary/30 hover:text-primary'
+            }`}>
+            <tab.icon size={14} />
+            {tab.label}
+            <span className={`text-xs px-1.5 py-0.5 rounded-md font-bold ${filter === tab.key ? 'bg-white/20 text-white' : 'bg-slate-100 text-text-muted'}`}>
+              {counts[tab.key]}
+            </span>
+          </button>
+        ))}
+      </div>
 
-        <div className="pro-table-wrapper">
+      {/* Search */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={15} />
+        <input type="text" placeholder="Cari produk / lokasi / ID..."
+          value={search} onChange={e => setSearch(e.target.value)} className="pro-input pl-10" />
+      </div>
+
+      {/* Table */}
+      <div className="pro-table-wrapper">
         <table className="pro-table">
           <thead>
             <tr>
-              <th>ID & Tanggal</th>
-              <th>Produk & Qty</th>
-              <th>Alur Mutasi</th>
-              <th className="text-center">Status</th>
+              <th>ID</th>
+              <th>Tanggal</th>
+              <th>Tipe</th>
+              <th>Deskripsi</th>
+              <th className="text-center">Qty</th>
+              <th>Lokasi / Rute</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((mut) => (
-              <tr key={mut.id}>
-                <td>
-                  <div>
-                    <p className="font-semibold text-text-primary">{mut.id}</p>
-                    <p className="text-xs text-text-muted mt-0.5">{mut.date}</p>
-                  </div>
-                </td>
-                <td>
-                  <div className="flex items-center gap-2">
-                    <span className="pro-badge-neutral">{mut.qty} pcs</span>
-                    <span className="font-medium">{mut.product}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="px-2.5 py-1 bg-slate-100 rounded-lg font-medium text-text-secondary">{mut.from}</span>
-                    <ArrowRight size={14} className="text-text-muted shrink-0" />
-                    <span className="px-2.5 py-1 bg-primary-light text-primary rounded-lg font-medium">{mut.to}</span>
-                  </div>
-                </td>
-                <td className="text-center">
-                  <span className={mut.status === 'Selesai' ? 'pro-badge-success' : 'pro-badge-warning'}>
-                    {mut.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-            {filtered.length === 0 && (
+            {filtered.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-12">
-                  <div className="flex flex-col items-center">
-                    <PackageSearch size={32} className="text-text-muted mb-2" />
-                    <p className="text-text-muted font-medium">Tidak ada mutasi ditemukan</p>
-                  </div>
+                <td colSpan={6} className="text-center py-14">
+                  <ArrowRightLeft size={28} className="mx-auto text-text-muted mb-2 opacity-30" />
+                  <p className="text-text-muted">
+                    {mutations.length === 0 ? 'Belum ada mutasi stok' : 'Tidak ada hasil untuk filter ini'}
+                  </p>
                 </td>
               </tr>
-            )}
+            ) : filtered.map(m => {
+              const Icon = TYPE_ICON[m.type];
+              return (
+                <tr key={`${m.id}-${m.date}`}>
+                  <td><span className="font-mono text-xs font-semibold text-text-secondary">{m.id.slice(0, 12)}</span></td>
+                  <td className="text-sm text-text-secondary whitespace-nowrap">{m.date}</td>
+                  <td>
+                    <span className={`${TYPE_BADGE[m.type]} text-xs flex items-center gap-1.5 w-fit`}>
+                      <Icon size={11} />
+                      {TYPE_LABELS[m.type]}
+                    </span>
+                  </td>
+                  <td className="text-sm font-medium text-text-primary max-w-xs">{m.description}</td>
+                  <td className="text-center">
+                    <span className={`text-sm font-bold ${
+                      m.type === 'sale' ? 'text-amber-600' :
+                      m.type === 'stock_in' ? 'text-emerald-600' : 'text-indigo-600'
+                    }`}>
+                      {m.type === 'sale' ? '−' : '+'}{m.qty}
+                    </span>
+                  </td>
+                  <td className="text-sm text-text-secondary">{m.location}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-        </div>
       </div>
+
+      {filtered.length > 0 && (
+        <p className="text-xs text-text-muted text-right">
+          Menampilkan {filtered.length} dari {mutations.length} mutasi
+        </p>
+      )}
     </div>
   );
 }

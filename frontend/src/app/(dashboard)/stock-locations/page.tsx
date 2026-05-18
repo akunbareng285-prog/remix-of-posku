@@ -83,7 +83,7 @@ export default function StockLocationsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="page-title">Stok & Lokasi</h1>
+          <h1 className="page-title">Stok &amp; <span className="text-primary">Lokasi</span></h1>
           <p className="page-subtitle">Matrix stok produk per lokasi toko/gudang</p>
         </div>
         <div className="flex items-center gap-2">
