@@ -164,37 +164,43 @@ export default function TransferStokPage() {
             </div>
 
             {/* Produk */}
+            {/* Produk */}
             <div className="pro-card">
-              <h3 className="card-title mb-4">Produk Yang Ditransfer</h3>
-              <div className="relative mb-4">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={15} />
-                <input type="text" placeholder="Cari & tambah produk..."
-                  value={productSearch}
-                  onChange={e => { setProductSearch(e.target.value); setShowList(true); }}
-                  onFocus={() => setShowList(true)}
-                  disabled={!fromId}
-                  className={`pro-input pl-10 ${!fromId ? 'opacity-50 cursor-not-allowed' : ''}`} />
-                {!fromId && (
-                  <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1">
-                    <AlertTriangle size={11} /> Pilih lokasi asal terlebih dahulu
-                  </p>
-                )}
+              <h3 className="card-title mb-5">Produk Yang Ditransfer</h3>
+              <div className="relative mb-6">
+                <div className="relative">
+                  <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${!fromId ? 'text-slate-300' : 'text-slate-400'}`} size={16} />
+                  <input type="text" placeholder="Cari nama atau SKU produk untuk ditransfer..."
+                    value={productSearch}
+                    onChange={e => { setProductSearch(e.target.value); setShowList(true); }}
+                    onFocus={() => setShowList(true)}
+                    disabled={!fromId}
+                    className={`pro-input pl-10 py-2.5 text-sm w-full transition-all ${
+                      !fromId 
+                        ? 'bg-slate-50 border-slate-200 text-slate-400 placeholder:text-slate-300 cursor-not-allowed opacity-80 shadow-none' 
+                        : 'focus:border-primary focus:ring-primary/20'
+                    }`} 
+                  />
+                </div>
                 {showList && productSearch && fromId && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-30 overflow-hidden">
+                  <div className="absolute top-[42px] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] z-30 overflow-hidden">
                     {availableProducts.length === 0
-                      ? <p className="px-4 py-3 text-sm text-text-muted">Tidak ada produk / stok habis di lokasi ini</p>
+                      ? <p className="px-5 py-4 text-sm text-slate-500 text-center font-medium">Tidak ada produk atau stok kosong di lokasi ini.</p>
                       : availableProducts.map(p => (
                         <button key={p.id} onClick={() => addItem(p)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 text-left transition-colors">
-                          <Package size={14} className="text-text-muted shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{p.name}</p>
-                            <p className="text-xs text-text-muted">{p.sku}</p>
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-left transition-colors border-b border-slate-100 last:border-0">
+                          <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                            <Package size={14} className="text-slate-500" />
                           </div>
-                          <span className="text-xs font-semibold text-primary">
-                            Stok: {getStock(p.id, fromId)}
-                          </span>
-                          <ChevronRight size={13} className="text-text-muted shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-700 truncate">{p.name}</p>
+                            <p className="text-[11px] text-slate-500 font-medium uppercase tracking-wider">{p.sku}</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Tersedia</span>
+                            <span className="text-xs font-black text-primary">{getStock(p.id, fromId)} {p.unit || 'pcs'}</span>
+                          </div>
+                          <ChevronRight size={16} className="text-slate-300 ml-1 shrink-0" />
                         </button>
                       ))}
                   </div>
@@ -202,9 +208,12 @@ export default function TransferStokPage() {
               </div>
 
               {items.length === 0 ? (
-                <div className="text-center py-8 text-text-muted">
-                  <Package size={28} className="mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">Belum ada produk dipilih</p>
+                <div className="border-2 border-dashed border-slate-200 rounded-2xl py-12 px-6 flex flex-col items-center justify-center bg-slate-50/50 text-center">
+                  <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 text-slate-300">
+                    <Package size={32} />
+                  </div>
+                  <p className="text-sm font-bold text-slate-700 mb-1">Belum ada produk</p>
+                  <p className="text-xs text-slate-500 max-w-[200px]">Cari dan pilih produk di atas untuk ditambahkan ke daftar transfer.</p>
                 </div>
               ) : (
                 <div className="space-y-2">

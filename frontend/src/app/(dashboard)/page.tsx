@@ -87,15 +87,17 @@ export default function DashboardHome() {
 
   const isAdmin = role === 'ADMIN';
   return (
-    <div className="space-y-8 relative z-10">
+    <div className="space-y-6 relative z-10">
       {/* Page Header (Moved above columns for alignment) */}
-      <div className="mb-2">
-        <h1 className="page-title">
-          Dashboard <span className="text-primary">{isAdmin ? 'Pusat' : 'Cabang Depok'}</span>
-        </h1>
-        <p className="page-subtitle">
-          {isAdmin ? 'Ringkasan performa bisnis dari seluruh cabang hari ini' : 'Ringkasan aktivitas dan performa toko hari ini'}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="page-title">
+            Dashboard <span className="text-primary">{isAdmin ? 'Pusat' : 'Cabang Depok'}</span>
+          </h1>
+          <p className="page-subtitle">
+            {isAdmin ? 'Ringkasan performa bisnis dari seluruh cabang hari ini' : 'Ringkasan aktivitas dan performa toko hari ini'}
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col xl:flex-row gap-8 items-stretch">
@@ -258,51 +260,51 @@ export default function DashboardHome() {
       {/* Kolom Kanan - Sidebar Content */}
       <div className="w-full xl:w-[380px] flex flex-col gap-8">
         {/* Pencapaian Target (New) */}
-        <div className="pro-card relative overflow-hidden bg-gradient-to-br from-white to-orange-50/30">
+        <div className={`pro-card relative overflow-hidden bg-gradient-to-br from-white to-orange-50/30 flex flex-col ${!isAdmin ? 'h-full' : ''}`}>
           <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-1000">
             <Target size={180} />
           </div>
-          <div className="relative z-10">
-            <h3 className="pro-label mb-8">Target Penjualan Bulanan</h3>
-            <div className="flex items-center justify-center py-10">
-              <div className="relative w-48 h-48">
+          <div className="relative z-10 flex flex-col h-full">
+            <h3 className="pro-label mb-4">Target Penjualan Bulanan</h3>
+            <div className="flex flex-1 items-center justify-center py-8">
+              <div className="relative w-56 h-56">
                 {/* Simple SVG Circular Progress */}
                 <svg className="w-full h-full transform -rotate-90 filter drop-shadow-sm">
                   <circle
-                    cx="96"
-                    cy="96"
-                    r="84"
+                    cx="112"
+                    cy="112"
+                    r="96"
                     stroke="currentColor"
-                    strokeWidth="14"
+                    strokeWidth="16"
                     fill="transparent"
                     className="text-slate-100"
                   />
                   <circle
-                    cx="96"
-                    cy="96"
-                    r="84"
+                    cx="112"
+                    cy="112"
+                    r="96"
                     stroke="currentColor"
-                    strokeWidth="14"
+                    strokeWidth="16"
                     fill="transparent"
-                    strokeDasharray={527}
-                    strokeDashoffset={527 - (527 * 72) / 100}
+                    strokeDasharray={603}
+                    strokeDashoffset={603 - (603 * 72) / 100}
                     strokeLinecap="round"
                     className="text-orange-500 transition-all duration-1000 ease-out"
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="stat-number text-[2.25rem]">72%</span>
+                  <span className="stat-number text-[2.75rem]">72%</span>
                   <span className="pro-label mt-1.5">Tercapai</span>
                 </div>
               </div>
             </div>
-            <div className="space-y-4 mt-6 bg-white/50 p-6 rounded-3xl border border-white">
+            <div className="space-y-4 mt-auto bg-white/60 p-6 rounded-3xl border border-white">
               <div className="flex justify-between items-center text-[15px]">
                 <span className="text-text-secondary font-bold">Terkumpul:</span>
                 <span className="font-black text-orange-600">Rp 108.000.000</span>
               </div>
-              <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-orange-500 w-[72%]"></div>
+              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-full bg-orange-500 w-[72%] shadow-[0_0_10px_rgba(249,115,22,0.4)]"></div>
               </div>
               <div className="flex justify-between items-center text-[15px]">
                 <span className="text-text-secondary font-bold">Sisa Target:</span>

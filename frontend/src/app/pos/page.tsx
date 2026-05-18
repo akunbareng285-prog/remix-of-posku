@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, Plus, Minus, Trash2, LogOut, ShoppingCart, Receipt, Store, Users, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search, Plus, Minus, Trash2, LogOut, ShoppingCart, Receipt, Store, Users, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 
 interface Product {
@@ -239,38 +239,61 @@ export default function PosPage() {
 
       {/* ===== LOCATION SELECTION SCREEN ===== */}
       {!selectedLocation && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gradient-to-br from-primary to-amber-600 p-6">
-          <div className="w-full max-w-md">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gradient-to-br from-orange-400 via-primary to-orange-600 p-6 overflow-hidden">
+          
+          {/* Abstract Background Effects */}
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-black/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.05] mix-blend-overlay pointer-events-none" />
+
+          {/* Main Card */}
+          <div className="relative z-10 w-full max-w-[420px] bg-white rounded-3xl p-8 sm:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] animate-scale-in border border-white/50">
+            
             <div className="text-center mb-8">
-              <div className="flex items-center justify-center gap-4 mb-8">
-                <img src="/logo_white.png" alt="POS Logo" className="h-16 w-auto object-contain shrink-0" />
-                <div className="text-left hidden sm:block">
-                  <p className="text-3xl font-black text-white tracking-tight leading-none">POS System</p>
-                  <p className="text-sm text-white/70 font-bold tracking-[0.15em] uppercase mt-1">Multi-Location</p>
+              <div className="flex flex-col items-center justify-center gap-3 mb-6">
+                <img src="/logo_color.png" alt="POS Logo" className="h-14 w-auto object-contain drop-shadow-sm" />
+                <div>
+                  <p className="text-2xl font-black text-slate-800 tracking-tight leading-none">POS System</p>
+                  <p className="text-[10px] text-primary font-bold tracking-[0.2em] uppercase mt-1">Multi-Location</p>
                 </div>
               </div>
-              <h1 className="text-2xl font-bold text-white">Pilih Lokasi Kasir</h1>
-              <p className="text-white/70 text-sm mt-1">Halo, {userName}! Pilih lokasi toko untuk memulai transaksi</p>
+              <div className="text-[1.75rem] font-bold text-slate-900 tracking-tight leading-tight mb-2">Pilih Lokasi Kasir</div>
+              <p className="text-slate-500 text-sm">Halo, <span className="font-semibold text-slate-700">{userName}</span>! Silakan pilih lokasi operasional Anda saat ini.</p>
             </div>
+            
             <div className="space-y-3">
               {locations.map(loc => (
-                <button key={loc.id} onClick={() => setSelectedLocation(loc)}
-                  className="w-full flex items-center gap-4 px-5 py-4 bg-white/15 hover:bg-white rounded-2xl border-2 border-white/30 hover:border-white text-left transition-all duration-200 group">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 group-hover:bg-primary/10 flex items-center justify-center shrink-0">
-                    <Store size={20} className="text-white group-hover:text-primary" />
+                <button 
+                  key={loc.id} 
+                  onClick={() => setSelectedLocation(loc)}
+                  className="w-full flex items-center gap-4 px-5 py-4 bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-primary/50 shadow-sm hover:shadow-md text-left transition-all duration-300 group active:scale-[0.98]"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-100 group-hover:bg-primary/10 group-hover:border-primary/20 flex items-center justify-center shrink-0 transition-colors">
+                    <Store size={22} className="text-slate-400 group-hover:text-primary transition-colors" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-white group-hover:text-text-primary text-base">{loc.name}</p>
-                    <p className="text-white/60 group-hover:text-text-muted text-xs capitalize">{loc.type === 'store' ? 'Toko' : 'Gudang'}</p>
+                    <p className="font-bold text-slate-800 group-hover:text-primary text-base transition-colors">{loc.name}</p>
+                    <p className="text-slate-500 text-xs font-medium capitalize mt-0.5">{loc.type === 'store' ? 'Toko Retail' : 'Gudang Utama'}</p>
                   </div>
-                  <div className="text-white/40 group-hover:text-primary">
-                    <ArrowLeft size={18} className="rotate-180" />
+                  <div className="text-slate-300 group-hover:text-primary group-hover:translate-x-1 transition-all">
+                    <ArrowRight size={20} />
                   </div>
                 </button>
               ))}
             </div>
-            <div className="mt-6 text-center">
-              <Link href="/" className="text-white/60 hover:text-white text-sm transition-colors">← Kembali ke Dashboard</Link>
+            
+            <div className="mt-8 text-center pt-6 border-t border-slate-100">
+              {userRole === 'KASIR' ? (
+                <button onClick={handleLogout} className="inline-flex items-center justify-center gap-2 text-rose-500 hover:text-rose-600 text-sm font-semibold transition-colors group">
+                  <LogOut size={16} className="group-hover:-translate-x-1 transition-transform" />
+                  Keluar Aplikasi
+                </button>
+              ) : (
+                <Link href="/" className="inline-flex items-center justify-center gap-2 text-slate-500 hover:text-primary text-sm font-semibold transition-colors group">
+                  <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                  Kembali ke Dashboard
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -385,118 +408,123 @@ export default function PosPage() {
 
       {/* Right: Product Grid */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header: Search, Filter & Profile */}
-        <div className="px-6 py-4 bg-white/80 backdrop-blur-xl border-b border-card-border flex flex-col md:flex-row md:items-center justify-between gap-4 z-20 shadow-sm relative">
+        {/* Top Header: Search & Profile */}
+        <div className="bg-white/95 backdrop-blur-xl border-b border-slate-200 z-20 shadow-sm relative">
           
-          {/* Search & Filter */}
-          <div className="flex-1 flex flex-col gap-3 min-w-0">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Scan barcode atau cari nama produk..."
-                className="pro-input pl-10 py-2.5 text-sm"
-              />
+          {/* Top Row: Search Bar & Profile */}
+          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            
+            {/* Search Bar */}
+            <div className="flex-1 max-w-2xl min-w-0">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari nama produk atau scan barcode..."
+                  className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all focus:bg-white shadow-inner"
+                />
+              </div>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300
-                    ${selectedCategory === cat
-                      ? 'bg-primary text-white shadow-md shadow-primary/20'
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'
-                    }`}
-                >
-                  {cat.charAt(0) + cat.slice(1).toLowerCase()}
-                </button>
-              ))}
+            {/* Profile Dropdown */}
+            <div className="relative shrink-0 self-start sm:self-auto">
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200"
+              >
+                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-sm font-bold text-white shadow-inner">
+                  {userName?.substring(0, 2).toUpperCase() || 'AD'}
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="text-sm font-bold text-text-primary leading-tight">{userName}</p>
+                  <p className="text-[10px] text-primary font-bold uppercase tracking-wider">{userRole}</p>
+                </div>
+                <ChevronDown size={16} className={`text-slate-400 hidden sm:block transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {profileOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setProfileOpen(false)} />
+                  <div className="absolute right-0 top-14 w-56 bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] py-2 z-40 animate-scale-in">
+                    <div className="px-4 py-3 border-b border-slate-100 mb-1">
+                      <p className="text-sm font-bold text-text-primary">{userName}</p>
+                      <p className="text-xs text-primary font-bold tracking-wider uppercase mb-2">{userRole}</p>
+                      <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                        <Store size={12} className="text-primary" />
+                        <span>{userRole === 'ADMIN' ? 'Semua Cabang (Pusat)' : 'Cabang Depok'}</span>
+                      </div>
+                    </div>
+                    
+                    {userRole === 'ADMIN' && (
+                      <>
+                        <Link
+                          href="/users"
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors"
+                        >
+                          <Users size={16} /> Tambah Akun
+                        </Link>
+                        <div className="mx-4 my-1 border-t border-slate-100" />
+                      </>
+                    )}
+                    
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                    >
+                      <LogOut size={16} /> Keluar Aplikasi
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Profile Dropdown */}
-          <div className="relative shrink-0 self-start md:self-center">
-            <button
-              onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200"
-            >
-              <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-sm font-bold text-white shadow-inner">
-                {userName?.substring(0, 2).toUpperCase() || 'AD'}
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-sm font-bold text-text-primary leading-tight">{userName}</p>
-                <p className="text-[10px] text-primary font-bold uppercase tracking-wider">{userRole}</p>
-              </div>
-              <ChevronDown size={16} className={`text-slate-400 hidden sm:block transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {profileOpen && (
-              <>
-                <div className="fixed inset-0 z-30" onClick={() => setProfileOpen(false)} />
-                <div className="absolute right-0 top-14 w-56 bg-white/90 backdrop-blur-xl rounded-2xl border border-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] py-2 z-40 animate-scale-in">
-                  <div className="px-4 py-3 border-b border-slate-100 mb-1">
-                    <p className="text-sm font-bold text-text-primary">{userName}</p>
-                    <p className="text-xs text-primary font-bold tracking-wider uppercase mb-2">{userRole}</p>
-                    <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-500 bg-slate-100/80 p-2 rounded-lg border border-white shadow-inner">
-                      <Store size={12} className="text-primary" />
-                      <span>{userRole === 'ADMIN' ? 'Semua Cabang (Pusat)' : 'Cabang Depok'}</span>
-                    </div>
-                  </div>
-                  
-                  {userRole === 'ADMIN' && (
-                    <>
-                      <Link
-                        href="/users"
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors"
-                      >
-                        <Users size={16} /> Tambah Akun
-                      </Link>
-                      <div className="mx-4 my-1 border-t border-slate-100" />
-                    </>
-                  )}
-                  
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors"
-                  >
-                    <LogOut size={16} /> Keluar Aplikasi
-                  </button>
-                </div>
-              </>
-            )}
+          {/* Bottom Row: Categories Tab */}
+          <div className="px-6 pb-4 flex gap-2.5 overflow-x-auto hide-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-5 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 active:scale-95
+                  ${selectedCategory === cat
+                    ? 'bg-primary text-white shadow-[0_4px_12px_rgba(255,140,0,0.25)]'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
+                  }`}
+              >
+                {cat.charAt(0) + cat.slice(1).toLowerCase()}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Product Grid */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filteredProducts.length === 0 ? (
               <div className="col-span-full py-16 text-center">
-                <p className="text-text-muted font-medium">Produk tidak ditemukan</p>
+                <p className="text-slate-500 font-medium">Produk tidak ditemukan</p>
               </div>
             ) : (
               filteredProducts.map((product) => (
                 <button
                   key={product.id}
                   onClick={() => addToCart(product)}
-                  className="pro-card-elevated text-left group cursor-pointer hover:border-primary/30 active:scale-[0.98] transition-all duration-200"
+                  className="bg-white rounded-2xl p-4 border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-primary/40 hover:shadow-[0_8px_24px_rgba(255,140,0,0.12)] text-left group cursor-pointer active:scale-[0.98] transition-all duration-300 flex flex-col"
                 >
-                  <div className="h-28 rounded-xl bg-slate-50 overflow-hidden relative mb-3 group-hover:bg-primary/5 transition-colors">
+                  <div className="w-full h-32 rounded-xl bg-slate-50/50 border border-slate-100 overflow-hidden relative mb-4 group-hover:bg-primary/5 transition-colors flex items-center justify-center">
                     <Image
                       src={product.image}
                       alt={product.name}
                       fill
-                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                      className="object-contain p-3 group-hover:scale-110 transition-transform duration-500"
                       sizes="(max-width: 768px) 50vw, 25vw"
                     />
                   </div>
-                  <h3 className="text-sm font-semibold text-text-primary line-clamp-2 leading-snug mb-2">{product.name}</h3>
-                  <div className="flex justify-between items-center mt-auto pt-3 border-t border-card-border">
-                    <span className="text-base font-bold text-primary">Rp {product.price.toLocaleString('id-ID')}</span>
+                  <h3 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug mb-3 flex-1 group-hover:text-primary transition-colors">{product.name}</h3>
+                  <div className="flex justify-between items-center w-full pt-3 border-t border-slate-100">
+                    <span className="text-base font-black text-primary tracking-tight">Rp {product.price.toLocaleString('id-ID')}</span>
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg ${
                       getAvailableStock(product) <= 0
                         ? 'bg-red-100 text-red-600'

@@ -143,7 +143,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Nav */}
-        <nav className={`flex-1 overflow-y-auto space-y-1 ${isCollapsed ? 'px-3 py-4' : 'px-4 py-4'}`}>
+        <nav className={`flex-1 overflow-y-auto sidebar-scroll space-y-1 ${isCollapsed ? 'px-3 py-4' : 'px-4 py-4'}`}>
           {navGroups.map((group, gi) => {
             const items = group.items.filter(i => i.roles.includes(role!));
             if (!items.length) return null;
