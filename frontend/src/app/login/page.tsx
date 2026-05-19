@@ -79,9 +79,9 @@ export default function LoginPage() {
         </div>
 
         {/* Center Content */}
-        <div className="relative z-10 max-w-lg mb-20 animate-slide-in -mt-10">
-          <div className="text-[4rem] xl:text-[5rem] font-bold text-white leading-tight mb-4 tracking-tight" style={{ color: 'white' }}>
-            Welcome to...
+        <div className="relative z-10 max-w-xl mb-20 animate-slide-in -mt-10">
+          <div className="text-[3rem] xl:text-[3.5rem] font-bold text-white leading-tight mb-4 tracking-tight whitespace-nowrap" style={{ color: 'white' }}>
+            Manajemen Bisnis
           </div>
           <p className="text-lg text-white/90 font-medium leading-relaxed mt-2" style={{ color: 'rgba(255,255,255,0.9)' }}>
             Sistem Point of Sale terbaik untuk mengelola inventori, memantau penjualan, dan operasionalkan multi-lokasi bisnis Anda dengan sangat mudah, aman, dan efisien.
