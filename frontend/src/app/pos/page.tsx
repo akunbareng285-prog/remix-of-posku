@@ -17,7 +17,11 @@ interface Product {
   unit?: string;
 }
 
-interface Location { id: string; name: string; type: string; }
+interface Location {
+  id: string;
+  name: string;
+  type: string;
+}
 
 interface CartItem extends Product {
   quantity: number;
@@ -39,7 +43,7 @@ export default function PosPage() {
   const [userRole, setUserRole] = useState<string>('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [profileOpen, setProfileOpen] = useState<boolean>(false);
-  
+
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>('Cash');
   const [cashInput, setCashInput] = useState<number>(0);
@@ -67,19 +71,21 @@ export default function PosPage() {
     if (savedProducts) {
       setProducts(JSON.parse(savedProducts));
     }
-    
+
     // Load categories from localStorage
     const savedCategories = localStorage.getItem('pos_categories');
     if (savedCategories) setCategories(['SEMUA', ...JSON.parse(savedCategories)]);
 
     // Load locations
     const savedLocs = localStorage.getItem('pos_locations');
-    const locs: Location[] = savedLocs ? JSON.parse(savedLocs) : [
-      { id: 'LOC-1', name: 'Gudang Utama', type: 'warehouse' },
-      { id: 'LOC-2', name: 'Toko Pusat', type: 'store' },
-      { id: 'LOC-3', name: 'Cabang Depok', type: 'store' },
-    ];
-    setLocations(locs.filter(l => (l as any).isActive !== false));
+    const locs: Location[] = savedLocs
+      ? JSON.parse(savedLocs)
+      : [
+          { id: 'LOC-1', name: 'Gudang Utama', type: 'warehouse' },
+          { id: 'LOC-2', name: 'Toko Pusat', type: 'store' },
+          { id: 'LOC-3', name: 'Cabang Depok', type: 'store' },
+        ];
+    setLocations(locs.filter((l) => (l as any).isActive !== false));
 
     // Load stock map
     const sm = localStorage.getItem('pos_stock_map');
@@ -109,7 +115,7 @@ export default function PosPage() {
   };
 
   const addToCart = (product: Product) => {
-    const existingInCart = cart.find(item => item.id === product.id);
+    const existingInCart = cart.find((item) => item.id === product.id);
     const quantityInCart = existingInCart ? existingInCart.quantity : 0;
     const available = getAvailableStock(product);
     if (available <= quantityInCart) {
@@ -131,13 +137,13 @@ export default function PosPage() {
       return prevCart.map((item) => {
         if (item.id === id) {
           const newQuantity = item.quantity + delta;
-          
+
           // Check stock when increasing
           if (delta > 0 && item.stock <= item.quantity) {
             alert(`Stok produk "${item.name}" tidak mencukupi!`);
             return item;
           }
-          
+
           return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
         }
         return item;
@@ -156,15 +162,14 @@ export default function PosPage() {
   };
 
   const handleConfirmPayment = () => {
-    
     const transactionId = `TRX-${Date.now().toString().slice(-6)}`;
     const transactionDate = new Date().toLocaleString('id-ID');
     setLastTransaction({ id: transactionId, date: transactionDate, items: [...cart], total, paymentMethod });
 
     // 2. Update stock in localStorage
     const currentProducts: Product[] = JSON.parse(localStorage.getItem('pos_products') || '[]');
-    const updatedProducts = currentProducts.map(p => {
-      const cartItem = cart.find(item => item.id === p.id);
+    const updatedProducts = currentProducts.map((p) => {
+      const cartItem = cart.find((item) => item.id === p.id);
       if (cartItem) {
         return { ...p, stock: Math.max(0, p.stock - cartItem.quantity) };
       }
@@ -177,7 +182,7 @@ export default function PosPage() {
     // Also update stock_map for the selected location
     if (selectedLocation) {
       const updated = { ...stockMap };
-      cart.forEach(item => {
+      cart.forEach((item) => {
         const key = `${item.id}-${selectedLocation.id}`;
         const cur = updated[key] ?? item.stock;
         updated[key] = Math.max(0, cur - item.quantity);
@@ -185,30 +190,30 @@ export default function PosPage() {
       setStockMap(updated);
       localStorage.setItem('pos_stock_map', JSON.stringify(updated));
     }
-    
+
     // 3. Save Transaction to localStorage
     const newTransaction = {
       id: transactionId,
       date: transactionDate,
-      items: cart.map(item => ({
+      items: cart.map((item) => ({
         id: item.id,
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        category: item.category
+        category: item.category,
       })),
       total: total,
       cashier: userName,
       location: selectedLocation?.name || (userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok'),
       paymentMethod: paymentMethod,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    
+
     const savedTransactions = JSON.parse(localStorage.getItem('pos_transactions') || '[]');
     localStorage.setItem('pos_transactions', JSON.stringify([newTransaction, ...savedTransactions]));
 
     // 4. Save Mutations to localStorage
-    const newMutations = cart.map(item => ({
+    const newMutations = cart.map((item) => ({
       id: `MUT-${Date.now()}-${item.id}`,
       date: transactionDate,
       product: item.name,
@@ -217,7 +222,7 @@ export default function PosPage() {
       to: 'Pelanggan (Penjualan)',
       type: 'sale',
       status: 'Selesai',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }));
 
     const savedMutations = JSON.parse(localStorage.getItem('pos_mutations') || '[]');
@@ -236,11 +241,9 @@ export default function PosPage() {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
-
       {/* ===== LOCATION SELECTION SCREEN ===== */}
       {!selectedLocation && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gradient-to-br from-orange-400 via-primary to-orange-600 p-6 overflow-hidden">
-          
           {/* Abstract Background Effects */}
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-black/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4 pointer-events-none" />
@@ -248,7 +251,6 @@ export default function PosPage() {
 
           {/* Main Card */}
           <div className="relative z-10 w-full max-w-[420px] bg-white rounded-3xl p-8 sm:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] animate-scale-in border border-white/50">
-            
             <div className="text-center mb-8">
               <div className="flex flex-col items-center justify-center gap-3 mb-6">
                 <img src="/logo_color.png" alt="POS Logo" className="h-14 w-auto object-contain drop-shadow-sm" />
@@ -258,13 +260,15 @@ export default function PosPage() {
                 </div>
               </div>
               <div className="text-[1.75rem] font-bold text-slate-900 tracking-tight leading-tight mb-2">Pilih Lokasi Kasir</div>
-              <p className="text-slate-500 text-sm">Halo, <span className="font-semibold text-slate-700">{userName}</span>! Silakan pilih lokasi operasional Anda saat ini.</p>
+              <p className="text-slate-500 text-sm">
+                Halo, <span className="font-semibold text-slate-700">{userName}</span>! Silakan pilih lokasi operasional Anda saat ini.
+              </p>
             </div>
-            
+
             <div className="space-y-3">
-              {locations.map(loc => (
-                <button 
-                  key={loc.id} 
+              {locations.map((loc) => (
+                <button
+                  key={loc.id}
                   onClick={() => setSelectedLocation(loc)}
                   className="w-full flex items-center gap-4 px-5 py-4 bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-primary/50 shadow-sm hover:shadow-md text-left transition-all duration-300 group active:scale-[0.98]"
                 >
@@ -281,7 +285,7 @@ export default function PosPage() {
                 </button>
               ))}
             </div>
-            
+
             <div className="mt-8 text-center pt-6 border-t border-slate-100">
               {userRole === 'KASIR' ? (
                 <button onClick={handleLogout} className="inline-flex items-center justify-center gap-2 text-rose-500 hover:text-rose-600 text-sm font-semibold transition-colors group">
@@ -315,8 +319,13 @@ export default function PosPage() {
             <h2 className="text-base font-semibold text-text-primary">Transaksi</h2>
             <p className="text-xs text-text-muted flex items-center gap-1">
               {userName} •
-              <button onClick={() => { setSelectedLocation(null); setCart([]); }}
-                className="text-primary font-semibold hover:underline">
+              <button
+                onClick={() => {
+                  setSelectedLocation(null);
+                  setCart([]);
+                }}
+                className="text-primary font-semibold hover:underline"
+              >
                 {selectedLocation?.name || 'Pilih Lokasi'}
               </button>
             </p>
@@ -348,27 +357,18 @@ export default function PosPage() {
                   <p className="text-xs text-text-muted">Rp {item.price.toLocaleString('id-ID')}</p>
                 </div>
                 <div className="flex items-center gap-0.5">
-                  <button
-                    onClick={() => updateQuantity(item.id, -1)}
-                    className="w-7 h-7 rounded-lg bg-white border border-card-border flex items-center justify-center hover:bg-slate-50 transition-colors"
-                  >
+                  <button onClick={() => updateQuantity(item.id, -1)} className="w-7 h-7 rounded-lg bg-white border border-card-border flex items-center justify-center hover:bg-slate-50 transition-colors">
                     <Minus size={12} className="text-text-secondary" />
                   </button>
                   <span className="w-8 text-center text-sm font-semibold text-text-primary">{item.quantity}</span>
-                  <button
-                    onClick={() => updateQuantity(item.id, 1)}
-                    className="w-7 h-7 rounded-lg bg-white border border-card-border flex items-center justify-center hover:bg-slate-50 transition-colors"
-                  >
+                  <button onClick={() => updateQuantity(item.id, 1)} className="w-7 h-7 rounded-lg bg-white border border-card-border flex items-center justify-center hover:bg-slate-50 transition-colors">
                     <Plus size={12} className="text-text-secondary" />
                   </button>
                 </div>
                 <div className="text-right shrink-0 ml-1">
                   <p className="text-sm font-semibold text-text-primary">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</p>
                 </div>
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="p-1.5 rounded-lg text-text-muted opacity-0 group-hover:opacity-100 hover:text-danger hover:bg-red-50 transition-all"
-                >
+                <button onClick={() => removeFromCart(item.id)} className="p-1.5 rounded-lg text-text-muted opacity-0 group-hover:opacity-100 hover:text-danger hover:bg-red-50 transition-all">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -394,11 +394,7 @@ export default function PosPage() {
           </div>
 
           <div className="p-4 pt-0">
-            <button
-              onClick={handleCheckout}
-              disabled={cart.length === 0}
-              className="pro-button-primary w-full py-3.5 text-base font-bold"
-            >
+            <button onClick={handleCheckout} disabled={cart.length === 0} className="pro-button-primary w-full py-3.5 text-base font-bold">
               <ShoppingCart size={18} />
               Bayar Sekarang
             </button>
@@ -410,10 +406,8 @@ export default function PosPage() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header: Search & Profile */}
         <div className="bg-white/95 backdrop-blur-xl border-b border-slate-200 z-20 shadow-sm relative">
-          
           {/* Top Row: Search Bar & Profile */}
           <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            
             {/* Search Bar */}
             <div className="flex-1 max-w-2xl min-w-0">
               <div className="relative">
@@ -430,13 +424,8 @@ export default function PosPage() {
 
             {/* Profile Dropdown */}
             <div className="relative shrink-0 self-start sm:self-auto">
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200"
-              >
-                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-sm font-bold text-white shadow-inner">
-                  {userName?.substring(0, 2).toUpperCase() || 'AD'}
-                </div>
+              <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-sm font-bold text-white shadow-inner">{userName?.substring(0, 2).toUpperCase() || 'AD'}</div>
                 <div className="hidden sm:block text-left">
                   <p className="text-sm font-bold text-text-primary leading-tight">{userName}</p>
                   <p className="text-[10px] text-primary font-bold uppercase tracking-wider">{userRole}</p>
@@ -456,23 +445,17 @@ export default function PosPage() {
                         <span>{userRole === 'ADMIN' ? 'Semua Cabang (Pusat)' : 'Cabang Depok'}</span>
                       </div>
                     </div>
-                    
+
                     {userRole === 'ADMIN' && (
                       <>
-                        <Link
-                          href="/users"
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors"
-                        >
+                        <Link href="/users" className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors">
                           <Users size={16} /> Tambah Akun
                         </Link>
                         <div className="mx-4 my-1 border-t border-slate-100" />
                       </>
                     )}
-                    
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors"
-                    >
+
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors">
                       <LogOut size={16} /> Keluar Aplikasi
                     </button>
                   </div>
@@ -488,10 +471,7 @@ export default function PosPage() {
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-5 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 active:scale-95
-                  ${selectedCategory === cat
-                    ? 'bg-primary text-white shadow-[0_4px_12px_rgba(255,140,0,0.25)]'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
-                  }`}
+                  ${selectedCategory === cat ? 'bg-primary text-white shadow-[0_4px_12px_rgba(255,140,0,0.25)]' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}
               >
                 {cat.charAt(0) + cat.slice(1).toLowerCase()}
               </button>
@@ -514,24 +494,16 @@ export default function PosPage() {
                   className="bg-white rounded-2xl p-4 border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-primary/40 hover:shadow-[0_8px_24px_rgba(255,140,0,0.12)] text-left group cursor-pointer active:scale-[0.98] transition-all duration-300 flex flex-col"
                 >
                   <div className="w-full h-32 rounded-xl bg-slate-50/50 border border-slate-100 overflow-hidden relative mb-4 group-hover:bg-primary/5 transition-colors flex items-center justify-center">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-contain p-3 group-hover:scale-110 transition-transform duration-500"
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                    />
+                    <Image src={product.image} alt={product.name} fill className="object-contain p-3 group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 768px) 50vw, 25vw" />
                   </div>
                   <h3 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug mb-3 flex-1 group-hover:text-primary transition-colors">{product.name}</h3>
                   <div className="flex justify-between items-center w-full pt-3 border-t border-slate-100">
                     <span className="text-base font-black text-primary tracking-tight">Rp {product.price.toLocaleString('id-ID')}</span>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg ${
-                      getAvailableStock(product) <= 0
-                        ? 'bg-red-100 text-red-600'
-                        : getAvailableStock(product) <= 5
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-slate-100 text-slate-500'
-                    }`}>
+                    <span
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg ${
+                        getAvailableStock(product) <= 0 ? 'bg-red-100 text-red-600' : getAvailableStock(product) <= 5 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
                       Stok: {getAvailableStock(product)}
                     </span>
                   </div>
@@ -548,18 +520,21 @@ export default function PosPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-scale-in overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100">
               <h2 className="section-title">Pilih Metode Pembayaran</h2>
-              <p className="text-xs text-text-muted mt-1">Total: <span className="font-bold text-primary">Rp {Math.round(total).toLocaleString('id-ID')}</span></p>
+              <p className="text-xs text-text-muted mt-1">
+                Total: <span className="font-bold text-primary">Rp {Math.round(total).toLocaleString('id-ID')}</span>
+              </p>
             </div>
             <div className="p-6 space-y-4">
               {/* Payment method buttons */}
               <div className="grid grid-cols-3 gap-2">
-                {['Cash', 'QRIS', 'Transfer', 'Debit', 'Kredit'].map(method => (
-                  <button key={method} onClick={() => setPaymentMethod(method)}
+                {['Cash', 'QRIS', 'Transfer', 'Debit', 'Kredit'].map((method) => (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentMethod(method)}
                     className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
-                      paymentMethod === method
-                        ? 'border-primary bg-primary text-white shadow-md shadow-primary/25'
-                        : 'border-slate-200 bg-white text-text-secondary hover:border-primary/40 hover:text-primary'
-                    }`}>
+                      paymentMethod === method ? 'border-primary bg-primary text-white shadow-md shadow-primary/25' : 'border-slate-200 bg-white text-text-secondary hover:border-primary/40 hover:text-primary'
+                    }`}
+                  >
                     {method}
                   </button>
                 ))}
@@ -569,26 +544,21 @@ export default function PosPage() {
               {paymentMethod === 'Cash' && (
                 <div className="pt-2">
                   <label className="block text-sm font-medium text-text-primary mb-2">Uang Diterima (Rp)</label>
-                  <input type="number" value={cashInput} min={Math.round(total)}
-                    onChange={e => setCashInput(Number(e.target.value))}
-                    className="pro-input text-lg font-bold text-right" />
+                  <input type="number" value={cashInput} min={Math.round(total)} onChange={(e) => setCashInput(Number(e.target.value))} className="pro-input text-lg font-bold text-right" />
                   {cashInput >= total && (
                     <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex justify-between items-center">
                       <span className="text-sm text-emerald-700 font-medium">Kembalian</span>
-                      <span className="text-base font-bold text-emerald-700">
-                        Rp {Math.round(cashInput - total).toLocaleString('id-ID')}
-                      </span>
+                      <span className="text-base font-bold text-emerald-700">Rp {Math.round(cashInput - total).toLocaleString('id-ID')}</span>
                     </div>
                   )}
                 </div>
               )}
 
               <div className="flex gap-3 pt-2 border-t border-slate-100">
-                <button onClick={() => setIsPayModalOpen(false)} className="pro-button-secondary flex-1">Batal</button>
-                <button
-                  onClick={handleConfirmPayment}
-                  disabled={paymentMethod === 'Cash' && cashInput < total}
-                  className="pro-button-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                <button onClick={() => setIsPayModalOpen(false)} className="pro-button-secondary flex-1">
+                  Batal
+                </button>
+                <button onClick={handleConfirmPayment} disabled={paymentMethod === 'Cash' && cashInput < total} className="pro-button-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
                   Konfirmasi Bayar
                 </button>
               </div>
@@ -599,74 +569,74 @@ export default function PosPage() {
 
       {/* ===== RECEIPT MODAL ===== */}
       {isReceiptModalOpen && lastTransaction && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-scale-in overflow-hidden flex flex-col">
-            <div className="p-6 text-center border-b border-dashed border-slate-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-sm animate-scale-in flex flex-col relative rounded-t-xl" style={{ filter: 'drop-shadow(0 20px 25px rgba(0,0,0,0.15))' }}>
+            <div className="p-6 text-center border-b border-dashed border-slate-300">
               <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-3">
                 <Receipt size={32} className="text-emerald-500" />
               </div>
-              <h2 className="text-xl font-bold text-text-primary uppercase tracking-wider">Pembayaran Berhasil</h2>
-              <p className="text-sm text-text-muted mt-1">ID: {lastTransaction.id}</p>
+              <h2 className="text-lg font-bold text-slate-800 uppercase tracking-widest">Pembayaran Berhasil</h2>
+              <p className="text-sm text-slate-500 font-mono mt-1 w-full text-center">ID: {lastTransaction.id}</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 max-h-[60vh]">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 max-h-[60vh] bg-white">
               <div className="text-center mb-6">
-                <h3 className="text-lg font-black text-text-primary tracking-tighter">ZEN POS</h3>
-                <p className="text-[10px] text-text-muted uppercase font-bold tracking-widest">Modern Multi-Location POS</p>
-                <div className="h-px bg-slate-100 my-4" />
-                <p className="text-[10px] text-text-secondary font-mono">{lastTransaction.date}</p>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tighter">ZEN POS</h3>
+                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Modern Multi-Location POS</p>
+                <div className="h-px bg-slate-100 my-4 mx-auto w-3/4" />
+                <p className="text-xs text-slate-500 font-mono">{lastTransaction.date}</p>
               </div>
 
               <div className="space-y-3">
                 {lastTransaction.items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-xs font-mono">
+                  <div key={item.id} className="flex justify-between text-sm font-mono items-start">
                     <div className="flex-1 pr-4">
-                      <p className="text-text-primary font-bold">{item.name}</p>
-                      <p className="text-text-muted">{item.quantity} x Rp {item.price.toLocaleString('id-ID')}</p>
+                      <p className="text-slate-800 font-semibold">{item.name}</p>
+                      <p className="text-slate-500 text-xs mt-0.5">
+                        {item.quantity} x Rp {item.price.toLocaleString('id-ID')}
+                      </p>
                     </div>
-                    <span className="text-text-primary font-bold">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                    <span className="text-slate-800 font-semibold">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-dashed border-slate-200 pt-4 space-y-2">
-                <div className="flex justify-between text-xs font-mono">
-                  <span className="text-text-muted">Subtotal</span>
-                  <span className="text-text-primary">Rp {(lastTransaction.total / 1.11).toLocaleString('id-ID', { maximumFractionDigits: 0 })}</span>
+              <div className="border-t border-dashed border-slate-300 pt-4 mt-2 space-y-2">
+                <div className="flex justify-between text-sm font-mono">
+                  <span className="text-slate-600">Subtotal</span>
+                  <span className="text-slate-800">Rp {(lastTransaction.total / 1.11).toLocaleString('id-ID', { maximumFractionDigits: 0 })}</span>
                 </div>
-                <div className="flex justify-between text-xs font-mono">
-                  <span className="text-text-muted">PPN (11%)</span>
-                  <span className="text-text-primary">Rp {(lastTransaction.total - lastTransaction.total / 1.11).toLocaleString('id-ID', { maximumFractionDigits: 0 })}</span>
+                <div className="flex justify-between text-sm font-mono">
+                  <span className="text-slate-600">PPN (11%)</span>
+                  <span className="text-slate-800">Rp {(lastTransaction.total - lastTransaction.total / 1.11).toLocaleString('id-ID', { maximumFractionDigits: 0 })}</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold font-mono pt-2 border-t border-slate-100">
-                  <span className="text-text-primary">TOTAL</span>
-                  <span className="text-primary text-base">Rp {Math.round(lastTransaction.total).toLocaleString('id-ID')}</span>
+                <div className="flex justify-between text-base font-bold font-mono pt-3 mt-2 border-t border-dashed border-slate-300">
+                  <span className="text-slate-800">TOTAL</span>
+                  <span className="text-slate-800">Rp {Math.round(lastTransaction.total).toLocaleString('id-ID')}</span>
+                </div>
+                <div className="flex justify-between text-xs font-mono pt-1 text-slate-500 uppercase">
+                  <span>Metode Bayar</span>
+                  <span>{paymentMethod}</span>
                 </div>
               </div>
 
-              <div className="text-center pt-6 pb-2">
-                <p className="text-[10px] text-text-muted italic">Terima kasih atas kunjungan Anda</p>
-                <p className="text-[10px] text-text-muted font-bold mt-1">SIMPAN STRUK INI SEBAGAI BUKTI</p>
+              <div className="text-center pt-8 pb-2">
+                <p className="text-xs font-mono text-slate-500 italic">Terima kasih atas kunjungan Anda</p>
+                <p className="text-[10px] font-mono text-slate-400 font-bold mt-2">SIMPAN STRUK INI SEBAGAI BUKTI</p>
               </div>
             </div>
 
-            <div className="p-6 bg-slate-50 flex gap-3">
-              <button
-                onClick={() => setIsReceiptModalOpen(false)}
-                className="pro-button-secondary flex-1"
-              >
-                Tutup
-              </button>
-              <button
-                onClick={() => {
-                  window.print();
-                  setIsReceiptModalOpen(false);
-                }}
-                className="pro-button-primary flex-1"
-              >
-                Cetak Struk
-              </button>
-            </div>
+            {/* ZigZag Bottom Edge */}
+            <div
+              className="relative h-3 w-full"
+              style={{ background: 'linear-gradient(-45deg, transparent 8px, #ffffff 0), linear-gradient(45deg, transparent 8px, #ffffff 0)', backgroundPosition: 'left bottom', backgroundRepeat: 'repeat-x', backgroundSize: '16px 16px' }}
+            ></div>
+          </div>
+
+          <div className="absolute bottom-6 left-0 right-0 px-6 flex justify-center">
+            <button onClick={() => setIsReceiptModalOpen(false)} className="w-full max-w-sm bg-slate-800 hover:bg-slate-900 text-white font-mono font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95">
+              TUTUP & TRANSAKSI BARU
+            </button>
           </div>
         </div>
       )}

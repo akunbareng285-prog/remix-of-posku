@@ -1,11 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Download, AlertTriangle, MapPin, TrendingDown } from 'lucide-react';
+import { Search, AlertTriangle, MapPin, TrendingDown, Plus } from 'lucide-react';
+import Link from 'next/link';
 
-interface Product { id: number; sku: string; name: string; unit?: string; minStock?: number; }
-interface Location { id: string; name: string; type: 'store' | 'warehouse'; }
-interface StockEntry { productId: number; locationId: string; qty: number; }
+interface Product {
+  id: number;
+  sku: string;
+  name: string;
+  unit?: string;
+  minStock?: number;
+}
+interface Location {
+  id: string;
+  name: string;
+  type: 'store' | 'warehouse';
+}
+interface StockEntry {
+  productId: number;
+  locationId: string;
+  qty: number;
+}
 
 const defaultLocations: Location[] = [
   { id: 'LOC-1', name: 'Gudang Utama', type: 'warehouse' },
@@ -49,33 +64,20 @@ export default function StockLocationsPage() {
     }
   }, []);
 
-  const getStock = (productId: number, locationId: string) =>
-    stockMap[`${productId}-${locationId}`] ?? 0;
+  const getStock = (productId: number, locationId: string) => stockMap[`${productId}-${locationId}`] ?? 0;
 
-  const getTotal = (productId: number) =>
-    locations.reduce((sum, loc) => sum + getStock(productId, loc.id), 0);
+  const getTotal = (productId: number) => locations.reduce((sum, loc) => sum + getStock(productId, loc.id), 0);
 
   const getMinStock = (p: Product) => p.minStock ?? 10;
 
-  const isLow = (productId: number, locationId: string, product: Product) =>
-    getStock(productId, locationId) < getMinStock(product) && getStock(productId, locationId) > 0;
+  const isLow = (productId: number, locationId: string, product: Product) => getStock(productId, locationId) < getMinStock(product) && getStock(productId, locationId) > 0;
 
-  const handleUpdateStock = (productId: number, locationId: string, val: number) => {
-    const key = `${productId}-${locationId}`;
-    const updated = { ...stockMap, [key]: Math.max(0, val) };
-    setStockMap(updated);
-    localStorage.setItem('pos_stock_map', JSON.stringify(updated));
-  };
+  const filtered = products.filter((p) => p.name?.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase()));
 
-  const filtered = products.filter(p =>
-    p.name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.sku?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const displayLocs = locationFilter === 'ALL' ? locations : locations.filter(l => l.id === locationFilter);
+  const displayLocs = locationFilter === 'ALL' ? locations : locations.filter((l) => l.id === locationFilter);
 
   const lowStockCount = products.reduce((count, p) => {
-    const hasLow = locations.some(l => isLow(p.id, l.id, p));
+    const hasLow = locations.some((l) => isLow(p.id, l.id, p));
     return count + (hasLow ? 1 : 0);
   }, 0);
 
@@ -83,19 +85,21 @@ export default function StockLocationsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="page-title">Stok &amp; <span className="text-primary">Lokasi</span></h1>
+          <h1 className="page-title">
+            Stok &amp; <span className="text-primary">Lokasi</span>
+          </h1>
           <p className="page-subtitle">Matrix stok produk per lokasi toko/gudang</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {lowStockCount > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700 font-medium">
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-xl text-sm text-amber-700 font-medium border-0">
               <AlertTriangle size={15} />
-              {lowStockCount} produk stok tipis
+              <span className="font-bold">{lowStockCount} produk</span> stok tipis
             </div>
           )}
-          <button className="pro-button-secondary">
-            <Download size={15} /> Export Excel
-          </button>
+          <Link href="/barang-masuk" className="pro-button-primary">
+            <Plus size={15} /> Tambah Stok
+          </Link>
         </div>
       </div>
 
@@ -103,17 +107,15 @@ export default function StockLocationsPage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={15} />
-          <input
-            type="text"
-            placeholder="Cari produk..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pro-input pl-10"
-          />
+          <input type="text" placeholder="Cari produk..." value={search} onChange={(e) => setSearch(e.target.value)} className="pro-input pl-10" />
         </div>
-        <select value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className="pro-select">
+        <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="pro-select">
           <option value="ALL">Semua Lokasi</option>
-          {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+          {locations.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -123,16 +125,14 @@ export default function StockLocationsPage() {
           <thead>
             <tr>
               <th className="w-64">Produk</th>
-              {displayLocs.map(loc => (
+              {displayLocs.map((loc) => (
                 <th key={loc.id} className="text-center">
                   <div className="flex flex-col items-center gap-0.5">
                     <div className="flex items-center gap-1">
                       <MapPin size={11} className={loc.type === 'store' ? 'text-primary' : 'text-slate-400'} />
                       <span className={loc.type === 'store' ? 'text-primary' : ''}>{loc.name}</span>
                     </div>
-                    <span className="text-[9px] font-normal normal-case tracking-normal text-slate-400">
-                      {loc.type === 'store' ? 'TOKO' : 'GUDANG'}
-                    </span>
+                    <span className="text-[9px] font-normal normal-case tracking-normal text-slate-400">{loc.type === 'store' ? 'TOKO' : 'GUDANG'}</span>
                   </div>
                 </th>
               ))}
@@ -146,57 +146,47 @@ export default function StockLocationsPage() {
                   Tidak ada produk ditemukan
                 </td>
               </tr>
-            ) : filtered.map(product => {
-              const total = getTotal(product.id);
-              const anyLow = locations.some(l => isLow(product.id, l.id, product));
-              return (
-                <tr key={product.id} className={anyLow ? 'bg-amber-50/30' : ''}>
-                  <td>
-                    <p className="font-semibold text-text-primary text-sm">{product.name}</p>
-                    <p className="text-xs text-text-muted mt-0.5">
-                      {product.unit || 'pcs'} · min: {getMinStock(product)}
-                    </p>
-                  </td>
-                  {displayLocs.map(loc => {
-                    const qty = getStock(product.id, loc.id);
-                    const low = isLow(product.id, loc.id, product);
-                    return (
-                      <td key={loc.id} className="text-center">
-                        <input
-                          type="number"
-                          value={qty}
-                          onChange={e => handleUpdateStock(product.id, loc.id, Number(e.target.value))}
-                          className={`w-20 text-center text-sm font-bold py-1.5 px-2 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20
-                            ${low
-                              ? 'text-amber-600 border-amber-200 bg-amber-50 focus:border-amber-400'
-                              : 'text-text-primary border-slate-200 bg-transparent hover:bg-slate-50 focus:border-primary'
-                            }`}
-                          min={0}
-                        />
-                        {low && (
-                          <div className="flex justify-center mt-1">
-                            <TrendingDown size={11} className="text-amber-500" />
-                          </div>
-                        )}
-                      </td>
-                    );
-                  })}
-                  {locationFilter === 'ALL' && (
-                    <td className="text-center">
-                      <span className={`text-sm font-bold ${total === 0 ? 'text-danger' : 'text-text-primary'}`}>
-                        {total}
-                      </span>
+            ) : (
+              filtered.map((product) => {
+                const total = getTotal(product.id);
+                const anyLow = locations.some((l) => isLow(product.id, l.id, product));
+                return (
+                  <tr key={product.id} className={anyLow ? 'bg-amber-50/30' : ''}>
+                    <td>
+                      <p className="font-semibold text-text-primary text-sm">{product.name}</p>
+                      <p className="text-xs text-text-muted mt-0.5">
+                        {product.unit || 'pcs'} · min: {getMinStock(product)}
+                      </p>
                     </td>
-                  )}
-                </tr>
-              );
-            })}
+                    {displayLocs.map((loc) => {
+                      const qty = getStock(product.id, loc.id);
+                      const low = isLow(product.id, loc.id, product);
+                      return (
+                        <td key={loc.id} className="text-center py-4">
+                          <span className={`text-[15px] font-bold ${low ? 'text-amber-600' : 'text-text-primary'}`}>{qty > 0 ? qty : '-'}</span>
+                          {low && (
+                            <div className="flex justify-center mt-1">
+                              <TrendingDown size={14} className="text-amber-500" />
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                    {locationFilter === 'ALL' && (
+                      <td className="text-center">
+                        <span className={`text-sm font-bold ${total === 0 ? 'text-danger' : 'text-text-primary'}`}>{total}</span>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
 
       <p className="text-xs text-text-muted">
-        * Nilai berwarna <span className="text-amber-600 font-semibold">oranye</span> menandakan stok di bawah batas minimum. Klik angka untuk edit langsung.
+        * Nilai berwarna <span className="text-amber-600 font-semibold">oranye</span> menandakan stok di bawah batas minimum. Untuk menambah stok, gunakan halaman Barang Masuk.
       </p>
     </div>
   );

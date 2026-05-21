@@ -68,43 +68,50 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen flex font-sans bg-white">
+    <div className="min-h-screen flex font-sans bg-slate-50">
       {/* Left: Abstract Graphic Presentation */}
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-orange-400 via-primary to-orange-600 relative overflow-hidden flex-col justify-between p-12 xl:p-16">
-        
+      <div className="hidden lg:flex w-1/2 bg-slate-950 relative overflow-hidden flex-col items-center justify-center p-12 xl:p-16">
+        {/* Decorative Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
+
+        {/* Decorative Glowing Orbs */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/20 blur-[120px] rounded-full pointer-events-none -translate-y-1/2 z-0"></div>
+        <div className="absolute bottom-1/4 left-0 w-80 h-80 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none -translate-x-1/2 z-0"></div>
+
         {/* Top Logo */}
-        <div className="flex items-center gap-3 relative z-10 pt-4">
-          <img src="/logo_white.png" alt="POS Logo" className="h-8 w-auto object-contain brightness-0 invert" />
-          <p className="text-xl font-bold text-white tracking-widest uppercase">POS SYSTEM</p>
+        <div className="absolute top-12 left-12 xl:top-16 xl:left-16 flex items-center gap-3 z-20">
+          <img src="/logo_color.png" alt="POS Logo" className="h-9 w-auto object-contain drop-shadow-md" />
+          <p className="text-xl font-black text-white tracking-widest uppercase drop-shadow-md">POS SYSTEM</p>
         </div>
 
         {/* Center Content */}
-        <div className="relative z-10 max-w-xl mb-20 animate-slide-in -mt-10">
-          <div className="text-[3rem] xl:text-[3.5rem] font-bold text-white leading-tight mb-4 tracking-tight whitespace-nowrap" style={{ color: 'white' }}>
-            Manajemen Bisnis
+        <div className="relative z-10 w-full max-w-xl animate-fade-in -mt-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/60 border border-slate-700/60 backdrop-blur-sm text-slate-200 text-xs font-bold uppercase tracking-wider mb-8 shadow-lg">
+            <Sparkles size={14} className="text-primary" /> Solusi Terpadu & Terpercaya
           </div>
-          <p className="text-lg text-white/90 font-medium leading-relaxed mt-2" style={{ color: 'rgba(255,255,255,0.9)' }}>
-            Sistem Point of Sale terbaik untuk mengelola inventori, memantau penjualan, dan operasionalkan multi-lokasi bisnis Anda dengan sangat mudah, aman, dan efisien.
-          </p>
-        </div>
+          <h1 className="text-[3.5rem] xl:text-[4.2rem] font-black text-white leading-[1.1] mb-6 tracking-tight">
+            Tingkatkan <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-primary drop-shadow-sm">Efisiensi Bisnis</span>
+          </h1>
+          <p className="text-lg text-slate-300 font-medium leading-relaxed max-w-md">Sistem Point of Sale modern untuk mengelola inventori, memantau penjualan, dan mengoperasionalkan multi-lokasi bisnis Anda secara instan dan akurat.</p>
 
-        {/* Bottom Text */}
-        <div className="relative z-10 text-white/80 text-sm font-medium pb-4" style={{ color: 'rgba(255,255,255,0.8)' }}>
-          Akses aman khusus untuk tim manajemen & operasional.
-        </div>
-
-        {/* Wavy Bottom Abstract Shapes (SVG) */}
-        <div className="absolute bottom-0 left-0 right-0 z-0 pointer-events-none">
-          <svg viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto translate-y-1">
-            <path fill="currentColor" fillOpacity="0.2" d="M0,224L60,213.3C120,203,240,181,360,176C480,171,600,181,720,197.3C840,213,960,235,1080,240C1200,245,1320,235,1380,229.3L1440,224L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z" className="text-white"></path>
-            <path fill="currentColor" fillOpacity="0.3" d="M0,160L80,176C160,192,320,224,480,224C640,224,800,192,960,176C1120,160,1280,160,1360,160L1440,160L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z" className="text-white"></path>
-          </svg>
+          <div className="mt-12 flex items-center gap-5">
+            <div className="flex -space-x-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-950 flex items-center justify-center bg-slate-700 text-slate-300 z-10">
+                  <User size={16} />
+                </div>
+              ))}
+            </div>
+            <div className="text-sm font-medium text-slate-300">
+              Dipercaya oleh <span className="text-white font-bold">500+</span> bisnis
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Right: Login Form (White Background) */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-10 relative z-10 bg-white">
-        
+      <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-10 relative z-10 bg-white shadow-[-20px_0_40px_rgba(0,0,0,0.05)] rounded-l-3xl lg:-ml-6 my-0 lg:my-0 lg:rounded-none lg:shadow-none">
         {/* Mobile Top Logo (Hidden on Desktop) */}
         <div className="flex lg:hidden items-center justify-center gap-3 mb-8">
           <img src="/logo_color.png" alt="POS Logo" className="h-8 w-auto object-contain" />
@@ -137,11 +144,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   className="w-full pl-4 pr-11 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                 />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
                   <Lock size={16} />
                 </button>
               </div>
@@ -152,7 +155,9 @@ export default function LoginPage() {
                 <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
                 <span className="text-sm text-slate-600">Remember Me</span>
               </label>
-              <a href="#" className="text-sm font-semibold text-primary hover:text-primary-hover transition-colors">Forgot Your Password?</a>
+              <a href="#" className="text-sm font-semibold text-primary hover:text-primary-hover transition-colors">
+                Forgot Your Password?
+              </a>
             </div>
 
             <button
@@ -160,11 +165,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full bg-primary text-white font-semibold py-3.5 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(255,140,0,0.39)] hover:shadow-[0_6px_20px_rgba(255,140,0,0.23)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 mt-6 flex justify-center items-center"
             >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                'Log In'
-              )}
+              {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Log In'}
             </button>
           </form>
 
@@ -180,8 +181,8 @@ export default function LoginPage() {
 
           {/* Demo Mode Buttons (Instead of Google/Apple) */}
           <div className="mt-6 flex justify-center gap-3">
-            {roleCards.map(card => (
-              <button 
+            {roleCards.map((card) => (
+              <button
                 key={card.role}
                 onClick={() => handleLogin(card.role, card.name)}
                 disabled={isLoading}
@@ -195,14 +196,19 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-sm text-slate-500 mt-10">
-            Don't Have An Account? <a href="#" className="font-bold text-primary hover:underline">Register Now.</a>
+            Don't Have An Account?{' '}
+            <a href="#" className="font-bold text-primary hover:underline">
+              Register Now.
+            </a>
           </p>
         </div>
 
         {/* Bottom Footer */}
         <div className="flex justify-between items-center text-[11px] text-slate-400 font-medium">
           <p>Copyright © 2026 POS System Enterprises LTD.</p>
-          <a href="#" className="hover:text-slate-600 transition-colors">Privacy Policy</a>
+          <a href="#" className="hover:text-slate-600 transition-colors">
+            Privacy Policy
+          </a>
         </div>
       </div>
     </div>

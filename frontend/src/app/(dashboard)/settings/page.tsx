@@ -32,10 +32,12 @@ export default function SettingsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="page-title">Pengaturan <span className="text-primary">Sistem</span></h1>
+          <h1 className="page-title">
+            Pengaturan <span className="text-primary">Sistem</span>
+          </h1>
           <p className="page-subtitle">Konfigurasi sistem dan preferensi</p>
         </div>
-        <button className="pro-button-primary">
+        <button onClick={() => alert('Pengaturan Perubahan berhasil disimpan!')} className="pro-button-primary">
           <Save size={16} /> Simpan Perubahan
         </button>
       </div>

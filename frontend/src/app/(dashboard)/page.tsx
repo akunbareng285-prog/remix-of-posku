@@ -1,12 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { 
-  TrendingUp, ShoppingBag, AlertTriangle, ArrowUpRight, 
-  Plus, Sparkles, Store, Building2, Target, History,
-  ArrowUp, Clock, CheckCircle2, PackageOpen,
-  Coffee, UtensilsCrossed, CupSoda, Soup, Droplets
-} from 'lucide-react';
+import { TrendingUp, ShoppingBag, AlertTriangle, ArrowUpRight, Plus, Sparkles, Store, Building2, Target, History, ArrowUp, Clock, CheckCircle2, PackageOpen, Coffee, UtensilsCrossed, CupSoda, Soup, Droplets } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function DashboardHome() {
@@ -19,7 +14,7 @@ export default function DashboardHome() {
     lowStockCount: 0,
     stockInCount: 0,
     latestActivities: [] as any[],
-    topProducts: [] as any[]
+    topProducts: [] as any[],
   });
 
   useEffect(() => {
@@ -48,7 +43,8 @@ export default function DashboardHome() {
 
     // 2. Transactions
     const transactions: any[] = JSON.parse(localStorage.getItem('pos_transactions') || '[]');
-    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
     const todayTrans = transactions.filter((t: any) => t.timestamp >= todayStart.getTime());
     const todaySalesTotal = todayTrans.reduce((s: number, t: any) => s + t.total, 0);
     const totalRevenue = transactions.reduce((s: number, t: any) => s + t.total, 0);
@@ -63,7 +59,8 @@ export default function DashboardHome() {
     });
     const topProds = Object.entries(productSales)
       .map(([name, d]) => ({ name, sales: d.count, category: d.category }))
-      .sort((a, b) => b.sales - a.sales).slice(0, 5);
+      .sort((a, b) => b.sales - a.sales)
+      .slice(0, 5);
 
     // 4. Recent activities from mutations + stock-in
     const mutations: any[] = JSON.parse(localStorage.getItem('pos_mutations') || '[]');
@@ -81,7 +78,7 @@ export default function DashboardHome() {
       lowStockCount: lowStock,
       stockInCount: stockIn.length,
       latestActivities: latest,
-      topProducts: topProds
+      topProducts: topProds,
     });
   }, []);
 
@@ -94,9 +91,7 @@ export default function DashboardHome() {
           <h1 className="page-title">
             Dashboard <span className="text-primary">{isAdmin ? 'Pusat' : 'Cabang Depok'}</span>
           </h1>
-          <p className="page-subtitle">
-            {isAdmin ? 'Ringkasan performa bisnis dari seluruh cabang hari ini' : 'Ringkasan aktivitas dan performa toko hari ini'}
-          </p>
+          <p className="page-subtitle">{isAdmin ? 'Ringkasan performa bisnis dari seluruh cabang hari ini' : 'Ringkasan aktivitas dan performa toko hari ini'}</p>
         </div>
       </div>
 
@@ -104,248 +99,246 @@ export default function DashboardHome() {
         {/* Kolom Kiri - Main Content */}
         <div className="flex-1 flex flex-col gap-8">
           {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-          {/* Card 1: Penjualan */}
-          <div className="pro-stat-card group">
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <TrendingUp size={14} className="text-orange-500" />
-                Penjualan Hari Ini
-              </span>
-            </div>
-            <div>
-              <p className="text-4xl font-black text-slate-800 tracking-tight">Rp {stats.todaySales.toLocaleString('id-ID')}</p>
-              <div className="mt-4 flex items-center gap-2">
-                <span className="px-2 py-1 bg-orange-50 text-orange-600 text-[10px] font-bold rounded flex items-center gap-1">
-                  <CheckCircle2 size={12} />
-                  {stats.todayTransactions} Transaksi
-                </span>
-                <span className="text-xs text-slate-400">Total hari ini</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            {/* Penjualan */}
+            <div className="pro-stat-card group">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <TrendingUp size={20} />
+                </div>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Penjualan Hari Ini</span>
               </div>
-            </div>
-          </div>
-
-          {/* Card 2: Transaksi */}
-          <div className="pro-stat-card group">
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <ShoppingBag size={14} className="text-amber-500" />
-                Total Transaksi
-              </span>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-black text-slate-800 tracking-tight">{stats.totalTransactions}</p>
-                <span className="text-sm font-bold text-slate-400">All Time</span>
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <span className="px-2 py-1 bg-amber-50 text-amber-600 text-[10px] font-bold rounded flex items-center gap-1">
-                  <Target size={12} />
-                  Rp {stats.totalRevenue.toLocaleString('id-ID')}
-                </span>
-                <span className="text-xs text-slate-400">Total Pendapatan</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Stok Menipis */}
-          <div className="pro-stat-card group">
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <AlertTriangle size={14} className="text-rose-500" />
-                Peringatan Stok
-              </span>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-black text-slate-800 tracking-tight">{stats.lowStockCount}</p>
-                <span className="text-sm font-bold text-slate-400">Produk</span>
-              </div>
-              <div className="mt-4">
-                {stats.lowStockCount > 0 ? (
-                  <Link href="/stock-locations"
-                    className="inline-flex px-2 py-1 bg-rose-50 text-rose-600 text-[10px] font-bold rounded items-center gap-1 hover:bg-rose-100 transition-colors">
-                    <ArrowUpRight size={12} /> Cek Lokasi Stok
-                  </Link>
-                ) : (
-                  <span className="inline-flex px-2 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded items-center gap-1">
-                    <CheckCircle2 size={12} /> Stok Aman
+              <div>
+                <p className="text-4xl font-black text-slate-800 tracking-tight">Rp {stats.todaySales.toLocaleString('id-ID')}</p>
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-orange-500 text-sm font-bold flex items-center gap-1.5">
+                    <CheckCircle2 size={14} />
+                    {stats.todayTransactions} Transaksi
                   </span>
+                  <span className="text-xs text-slate-400 font-medium">Total hari ini</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Transaksi */}
+            <div className="pro-stat-card group">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <ShoppingBag size={20} />
+                </div>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Transaksi</span>
+              </div>
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-black text-slate-800 tracking-tight">{stats.totalTransactions}</p>
+                  <span className="text-sm font-bold text-slate-400">All Time</span>
+                </div>
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-amber-500 text-sm font-bold flex items-center gap-1.5">
+                    <Target size={14} />
+                    Rp {stats.totalRevenue.toLocaleString('id-ID')}
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium">Total Pendapatan</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Stok Menipis */}
+            <div className="pro-stat-card group">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <AlertTriangle size={20} />
+                </div>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Peringatan Stok</span>
+              </div>
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-black text-slate-800 tracking-tight">{stats.lowStockCount}</p>
+                  <span className="text-sm font-bold text-slate-400">Produk</span>
+                </div>
+                <div className="mt-4">
+                  {stats.lowStockCount > 0 ? (
+                    <Link href="/stock-locations" className="inline-flex text-rose-500 text-sm font-bold items-center gap-1.5 hover:text-rose-600 transition-colors">
+                      <ArrowUpRight size={14} /> Cek Lokasi Stok
+                    </Link>
+                  ) : (
+                    <span className="inline-flex text-emerald-500 text-sm font-bold items-center gap-1.5">
+                      <CheckCircle2 size={14} /> Stok Aman
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch flex-1">
+            {/* Aktivitas Terbaru */}
+            <div className="pro-card h-full flex flex-col">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <History size={20} className="text-slate-400" />
+                  Aktivitas Terbaru
+                </h2>
+              </div>
+              <div className="flex-1 flex flex-col">
+                {stats.latestActivities.length > 0 ? (
+                  stats.latestActivities.map((activity, i) => {
+                    const isStock = activity.type === 'stock_in';
+                    const Icon = isStock ? PackageOpen : activity.type === 'sale' ? ShoppingBag : Clock;
+                    const color = isStock ? 'text-emerald-500' : activity.type === 'sale' ? 'text-orange-500' : 'text-slate-500';
+
+                    return (
+                      <div key={i} className={`flex items-start gap-4 py-4 ${i !== stats.latestActivities.length - 1 ? 'border-b border-slate-100' : ''} group`}>
+                        <div className={`mt-0.5 ${color}`}>
+                          <Icon size={18} />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-slate-700">{activity.text}</p>
+                          <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-1 flex items-center gap-1">
+                            <Clock size={10} /> {activity.time}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center my-auto">
+                    <History size={32} className="text-slate-200 mb-2" />
+                    <p className="text-sm text-slate-400">Belum ada aktivitas hari ini</p>
+                  </div>
+                )}
+              </div>
+              <button className="w-full mt-4 py-3 text-xs font-bold text-slate-500 hover:text-orange-600 transition-colors flex items-center justify-center gap-1">
+                Lihat Semua <ArrowUpRight size={14} />
+              </button>
+            </div>
+
+            {/* Produk Terlaris (List Flat) */}
+            <div className="pro-card h-full flex flex-col">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <Target size={20} className="text-slate-400" />
+                  Produk Terlaris
+                </h2>
+              </div>
+              <div className="flex-1 flex flex-col">
+                {stats.topProducts.length > 0 ? (
+                  stats.topProducts.map((item, i) => {
+                    const Icon = item.category === 'MINUMAN' ? Coffee : item.category === 'MAKANAN' ? UtensilsCrossed : ShoppingBag;
+                    return (
+                      <div key={i} className={`flex items-center justify-between py-3.5 ${i !== stats.topProducts.length - 1 ? 'border-b border-slate-100' : ''} group`}>
+                        <div className="flex items-center gap-3">
+                          <div className="text-slate-400 group-hover:text-orange-500 transition-colors">
+                            <Icon size={18} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-slate-700">{item.name}</p>
+                            <p className="text-[11px] text-slate-400 font-medium mt-0.5 flex items-center gap-1">
+                              <CheckCircle2 size={10} /> {item.sales} unit
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {i === 0 && (
+                            <span className="text-xs font-black text-orange-500 flex items-center gap-1 uppercase tracking-widest">
+                              <Sparkles size={14} /> TOP
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center my-auto">
+                    <ShoppingBag size={32} className="text-slate-200 mb-2" />
+                    <p className="text-sm text-slate-400">Belum ada data penjualan</p>
+                  </div>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch flex-1">
-          {/* Aktivitas Terbaru */}
-          <div className="pro-card h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <History size={20} className="text-slate-400" />
-                Aktivitas Terbaru
-              </h2>
+        {/* Kolom Kanan - Sidebar Content */}
+        <div className="w-full xl:w-[380px] flex flex-col gap-8">
+          {/* Pencapaian Target (New) */}
+          <div className={`pro-card relative overflow-hidden bg-gradient-to-br from-white to-orange-50/30 flex flex-col ${!isAdmin ? 'h-full' : ''}`}>
+            <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+              <Target size={180} />
             </div>
-            <div className="flex-1 flex flex-col">
-              {stats.latestActivities.length > 0 ? stats.latestActivities.map((activity, i) => {
-                const isStock = activity.type === 'stock_in';
-                const Icon = isStock ? PackageOpen : (activity.type === 'sale' ? ShoppingBag : Clock);
-                const color = isStock ? 'text-emerald-500' : (activity.type === 'sale' ? 'text-orange-500' : 'text-slate-500');
-                
-                return (
-                  <div key={i} className={`flex items-start gap-4 py-4 ${i !== stats.latestActivities.length - 1 ? 'border-b border-slate-100' : ''} group`}>
-                    <div className={`mt-0.5 ${color}`}>
-                      <Icon size={18} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-700">{activity.text}</p>
-                      <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-1 flex items-center gap-1">
-                        <Clock size={10} /> {activity.time}
-                      </p>
-                    </div>
+            <div className="relative z-10 flex flex-col h-full">
+              <h3 className="pro-label mb-4">Target Penjualan Bulanan</h3>
+              <div className="flex flex-1 items-center justify-center py-8">
+                <div className="relative w-56 h-56">
+                  {/* Simple SVG Circular Progress */}
+                  <svg className="w-full h-full transform -rotate-90 filter drop-shadow-sm">
+                    <circle cx="112" cy="112" r="96" stroke="currentColor" strokeWidth="16" fill="transparent" className="text-slate-100" />
+                    <circle
+                      cx="112"
+                      cy="112"
+                      r="96"
+                      stroke="currentColor"
+                      strokeWidth="16"
+                      fill="transparent"
+                      strokeDasharray={603}
+                      strokeDashoffset={603 - (603 * 72) / 100}
+                      strokeLinecap="round"
+                      className="text-orange-500 transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="stat-number text-[2.75rem]">72%</span>
+                    <span className="pro-label mt-1.5">Tercapai</span>
                   </div>
-                );
-              }) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center my-auto">
-                  <History size={32} className="text-slate-200 mb-2" />
-                  <p className="text-sm text-slate-400">Belum ada aktivitas hari ini</p>
                 </div>
-              )}
+              </div>
+              <div className="space-y-4 mt-auto bg-white/60 p-6 rounded-3xl border border-white">
+                <div className="flex justify-between items-center text-[15px]">
+                  <span className="text-text-secondary font-bold">Terkumpul:</span>
+                  <span className="font-black text-orange-600">Rp 108.000.000</span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-orange-500 w-[72%] shadow-[0_0_10px_rgba(249,115,22,0.4)]"></div>
+                </div>
+                <div className="flex justify-between items-center text-[15px]">
+                  <span className="text-text-secondary font-bold">Sisa Target:</span>
+                  <span className="font-black text-text-primary">Rp 42.000.000</span>
+                </div>
+              </div>
             </div>
-            <button className="w-full mt-4 py-3 text-xs font-bold text-slate-500 hover:text-orange-600 transition-colors flex items-center justify-center gap-1">
-              Lihat Semua <ArrowUpRight size={14} />
-            </button>
           </div>
 
-          {/* Produk Terlaris (List Flat) */}
-          <div className="pro-card h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <Target size={20} className="text-slate-400" />
-                Produk Terlaris
+          {/* Performa Cabang (Hanya Admin) */}
+          {isAdmin && (
+            <div className="pro-card flex-1">
+              <h2 className="text-xl font-black text-text-primary flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
+                  <Building2 size={20} />
+                </div>
+                Performa Cabang
               </h2>
-            </div>
-            <div className="flex-1 flex flex-col">
-              {stats.topProducts.length > 0 ? stats.topProducts.map((item, i) => {
-                const Icon = item.category === 'MINUMAN' ? Coffee : (item.category === 'MAKANAN' ? UtensilsCrossed : ShoppingBag);
-                return (
-                  <div key={i} className={`flex items-center justify-between py-3.5 ${i !== stats.topProducts.length - 1 ? 'border-b border-slate-100' : ''} group`}>
-                    <div className="flex items-center gap-3">
-                      <div className="text-slate-400 group-hover:text-orange-500 transition-colors">
-                        <Icon size={18} />
-                      </div>
+              <div className="space-y-5">
+                {[
+                  { name: 'Pusat (Jakarta)', id: 'JKT01', sales: 'Rp 8.6jt', pct: 86, color: 'bg-orange-500' },
+                  { name: 'Cabang Depok', id: 'DEP01', sales: 'Rp 4.2jt', pct: 42, color: 'bg-amber-500' },
+                  { name: 'Cabang Bekasi', id: 'BKS01', sales: 'Rp 0', pct: 0, color: 'bg-slate-200' },
+                ].map((branch, i) => (
+                  <div key={i} className="p-5 rounded-3xl border border-slate-100/60 bg-white hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300">
+                    <div className="flex justify-between items-start mb-4">
                       <div>
-                        <p className="text-sm font-bold text-slate-700">{item.name}</p>
-                        <p className="text-[11px] text-slate-400 font-medium mt-0.5 flex items-center gap-1">
-                          <CheckCircle2 size={10} /> {item.sales} unit
-                        </p>
+                        <p className="text-sm font-semibold text-text-primary">{branch.name}</p>
+                        <p className="text-xs text-text-muted uppercase tracking-wider mt-0.5">{branch.id}</p>
                       </div>
+                      <p className="text-sm font-bold text-orange-600">{branch.sales}</p>
                     </div>
-                    <div className="text-right">
-                      {i === 0 && <span className="text-[10px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded uppercase tracking-widest">TOP</span>}
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className={`h-full ${branch.color} rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(249,115,22,0.3)]`} style={{ width: `${branch.pct}%` }}></div>
                     </div>
                   </div>
-                );
-              }) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center my-auto">
-                  <ShoppingBag size={32} className="text-slate-200 mb-2" />
-                  <p className="text-sm text-slate-400">Belum ada data penjualan</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Kolom Kanan - Sidebar Content */}
-      <div className="w-full xl:w-[380px] flex flex-col gap-8">
-        {/* Pencapaian Target (New) */}
-        <div className={`pro-card relative overflow-hidden bg-gradient-to-br from-white to-orange-50/30 flex flex-col ${!isAdmin ? 'h-full' : ''}`}>
-          <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-1000">
-            <Target size={180} />
-          </div>
-          <div className="relative z-10 flex flex-col h-full">
-            <h3 className="pro-label mb-4">Target Penjualan Bulanan</h3>
-            <div className="flex flex-1 items-center justify-center py-8">
-              <div className="relative w-56 h-56">
-                {/* Simple SVG Circular Progress */}
-                <svg className="w-full h-full transform -rotate-90 filter drop-shadow-sm">
-                  <circle
-                    cx="112"
-                    cy="112"
-                    r="96"
-                    stroke="currentColor"
-                    strokeWidth="16"
-                    fill="transparent"
-                    className="text-slate-100"
-                  />
-                  <circle
-                    cx="112"
-                    cy="112"
-                    r="96"
-                    stroke="currentColor"
-                    strokeWidth="16"
-                    fill="transparent"
-                    strokeDasharray={603}
-                    strokeDashoffset={603 - (603 * 72) / 100}
-                    strokeLinecap="round"
-                    className="text-orange-500 transition-all duration-1000 ease-out"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="stat-number text-[2.75rem]">72%</span>
-                  <span className="pro-label mt-1.5">Tercapai</span>
-                </div>
+                ))}
               </div>
             </div>
-            <div className="space-y-4 mt-auto bg-white/60 p-6 rounded-3xl border border-white">
-              <div className="flex justify-between items-center text-[15px]">
-                <span className="text-text-secondary font-bold">Terkumpul:</span>
-                <span className="font-black text-orange-600">Rp 108.000.000</span>
-              </div>
-              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-orange-500 w-[72%] shadow-[0_0_10px_rgba(249,115,22,0.4)]"></div>
-              </div>
-              <div className="flex justify-between items-center text-[15px]">
-                <span className="text-text-secondary font-bold">Sisa Target:</span>
-                <span className="font-black text-text-primary">Rp 42.000.000</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Performa Cabang (Hanya Admin) */}
-        {isAdmin && (
-          <div className="pro-card flex-1">
-            <h2 className="text-xl font-black text-text-primary flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
-                <Building2 size={20} />
-              </div>
-              Performa Cabang
-            </h2>
-            <div className="space-y-5">
-              {[
-                { name: 'Pusat (Jakarta)', id: 'JKT01', sales: 'Rp 8.6jt', pct: 86, color: 'bg-orange-500' },
-                { name: 'Cabang Depok', id: 'DEP01', sales: 'Rp 4.2jt', pct: 42, color: 'bg-amber-500' },
-                { name: 'Cabang Bekasi', id: 'BKS01', sales: 'Rp 0', pct: 0, color: 'bg-slate-200' },
-              ].map((branch, i) => (
-                <div key={i} className="p-5 rounded-3xl border border-slate-100/60 bg-white hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-semibold text-text-primary">{branch.name}</p>
-                      <p className="text-xs text-text-muted uppercase tracking-wider mt-0.5">{branch.id}</p>
-                    </div>
-                    <p className="text-sm font-bold text-orange-600">{branch.sales}</p>
-                  </div>
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full ${branch.color} rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(249,115,22,0.3)]`} style={{ width: `${branch.pct}%` }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+          )}
         </div>
       </div>
     </div>

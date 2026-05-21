@@ -34,7 +34,9 @@ export default function UsersPage() {
   const [branchFilter, setBranchFilter] = useState('');
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [newUser, setNewUser] = useState<Omit<UserData, 'id'>>({ name: '', role: 'KASIR', branch: 'pusat' });
 
   useEffect(() => {
     const userRole = localStorage.getItem('pos_role');
@@ -53,6 +55,14 @@ export default function UsersPage() {
     setUsers(updatedUsers);
     setIsEditModalOpen(false);
     setEditingUser(null);
+  };
+
+  const handleAddUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newId = (users.length + 1).toString();
+    setUsers([...users, { ...newUser, id: newId }]);
+    setIsAddModalOpen(false);
+    setNewUser({ name: '', role: 'KASIR', branch: 'pusat' });
   };
 
   if (role && role !== 'ADMIN') {
@@ -80,10 +90,12 @@ export default function UsersPage() {
       <div className="space-y-6 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="page-title">Pegawai &amp; <span className="text-primary">Akses</span></h1>
+            <h1 className="page-title">
+              Pegawai &amp; <span className="text-primary">Akses</span>
+            </h1>
             <p className="page-subtitle">{users.length} pegawai terdaftar</p>
           </div>
-          <button className="pro-button-primary">
+          <button onClick={() => setIsAddModalOpen(true)} className="pro-button-primary">
             <UserPlus size={16} /> Pegawai Baru
           </button>
         </div>
@@ -92,29 +104,15 @@ export default function UsersPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-              <input
-                type="text"
-                placeholder="Cari nama pegawai..."
-                value={searchFilter}
-                onChange={(e) => setSearchFilter(e.target.value)}
-                className="pro-input pl-10"
-              />
+              <input type="text" placeholder="Cari nama pegawai..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} className="pro-input pl-10" />
             </div>
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="pro-select"
-            >
+            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="pro-select">
               <option value="">Semua Role</option>
               <option value="ADMIN">Admin</option>
               <option value="MANAGER">Manager</option>
               <option value="KASIR">Kasir</option>
             </select>
-            <select
-              value={branchFilter}
-              onChange={(e) => setBranchFilter(e.target.value)}
-              className="pro-select"
-            >
+            <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="pro-select">
               <option value="">Semua Cabang</option>
               <option value="pusat">Pusat</option>
               <option value="depok">Depok</option>
@@ -132,9 +130,7 @@ export default function UsersPage() {
 
                 <div className="p-5 flex-1 flex flex-col">
                   <div className="flex items-start gap-3 mb-4">
-                    <div className={`w-11 h-11 rounded-xl ${config.bg} flex items-center justify-center text-sm font-bold text-white shrink-0`}>
-                      {user.name.substring(0, 2).toUpperCase()}
-                    </div>
+                    <div className={`w-11 h-11 rounded-xl ${config.bg} flex items-center justify-center text-sm font-bold text-white shrink-0`}>{user.name.substring(0, 2).toUpperCase()}</div>
                     <div className="min-w-0 flex-1">
                       <h3 className="card-title truncate">{user.name}</h3>
                       <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
@@ -165,10 +161,7 @@ export default function UsersPage() {
                         <option value="ADMIN">Jadikan Admin</option>
                       </select>
                     )}
-                    <button
-                      onClick={() => handleEditClick(user)}
-                      className="pro-button-secondary w-full text-xs py-2"
-                    >
+                    <button onClick={() => handleEditClick(user)} className="pro-button-secondary w-full text-xs py-2">
                       <Edit size={13} /> Edit {user.role === 'ADMIN' ? 'Akun' : 'Detail'}
                     </button>
                   </div>
@@ -194,10 +187,7 @@ export default function UsersPage() {
               <h2 className="section-title flex items-center gap-2">
                 <Edit size={16} className="text-primary" /> Edit Pegawai
               </h2>
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-slate-100 transition-colors"
-              >
+              <button onClick={() => setIsEditModalOpen(false)} className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-slate-100 transition-colors">
                 <X size={18} />
               </button>
             </div>
@@ -205,23 +195,13 @@ export default function UsersPage() {
             <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-2">Nama Pegawai</label>
-                <input
-                  type="text"
-                  value={editingUser.name}
-                  onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
-                  className="pro-input"
-                  required
-                />
+                <input type="text" value={editingUser.name} onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })} className="pro-input" required />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text-primary mb-2">Role Akses</label>
-                  <select
-                    value={editingUser.role}
-                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as UserData['role'] })}
-                    className="pro-select w-full"
-                  >
+                  <select value={editingUser.role} onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as UserData['role'] })} className="pro-select w-full">
                     <option value="ADMIN">Admin</option>
                     <option value="MANAGER">Manager</option>
                     <option value="KASIR">Kasir</option>
@@ -229,11 +209,7 @@ export default function UsersPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-primary mb-2">Cabang</label>
-                  <select
-                    value={editingUser.branch}
-                    onChange={(e) => setEditingUser({ ...editingUser, branch: e.target.value })}
-                    className="pro-select w-full"
-                  >
+                  <select value={editingUser.branch} onChange={(e) => setEditingUser({ ...editingUser, branch: e.target.value })} className="pro-select w-full">
                     <option value="pusat">Pusat</option>
                     <option value="depok">Depok</option>
                   </select>
@@ -241,15 +217,61 @@ export default function UsersPage() {
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-card-border">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="pro-button-secondary flex-1"
-                >
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="pro-button-secondary flex-1">
                   Batal
                 </button>
                 <button type="submit" className="pro-button-primary flex-1">
                   <Save size={16} /> Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Tambah */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+          <div className="bg-white rounded-2xl border border-card-border shadow-2xl w-full max-w-lg animate-scale-in overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-card-border">
+              <h2 className="section-title flex items-center gap-2">
+                <UserPlus size={16} className="text-primary" /> Tambah Pegawai Baru
+              </h2>
+              <button onClick={() => setIsAddModalOpen(false)} className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-slate-100 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddUser} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">Nama Pegawai</label>
+                <input type="text" value={newUser.name} onChange={(e) => setNewUser({ ...newUser, name: e.target.value })} className="pro-input" required />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Role Akses</label>
+                  <select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value as UserData['role'] })} className="pro-select w-full">
+                    <option value="ADMIN">Admin</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="KASIR">Kasir</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Cabang</label>
+                  <select value={newUser.branch} onChange={(e) => setNewUser({ ...newUser, branch: e.target.value })} className="pro-select w-full">
+                    <option value="pusat">Pusat</option>
+                    <option value="depok">Depok</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-card-border">
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="pro-button-secondary flex-1">
+                  Batal
+                </button>
+                <button type="submit" className="pro-button-primary flex-1">
+                  <Save size={16} /> Simpan Pegawai
                 </button>
               </div>
             </form>
