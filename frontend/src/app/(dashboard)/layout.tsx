@@ -78,7 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navGroups: NavGroup[] = [
     {
       label: null,
-      items: [{ href: '/', icon: LayoutDashboard, label: 'Dashboard', roles: ['ADMIN', 'MANAGER'] }],
+      items: [{ href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['ADMIN', 'MANAGER'] }],
     },
     {
       label: 'Inventori',

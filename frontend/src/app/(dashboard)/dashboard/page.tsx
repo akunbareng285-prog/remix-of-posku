@@ -85,7 +85,7 @@ export default function DashboardHome() {
   const isAdmin = role === 'ADMIN';
   return (
     <div className="space-y-6 relative z-10">
-      {/* Page Header (Moved above columns for alignment) */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="page-title">
@@ -213,7 +213,7 @@ export default function DashboardHome() {
               </button>
             </div>
 
-            {/* Produk Terlaris (List Flat) */}
+            {/* Produk Terlaris */}
             <div className="pro-card h-full flex flex-col">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -261,7 +261,6 @@ export default function DashboardHome() {
 
         {/* Kolom Kanan - Sidebar Content */}
         <div className="w-full xl:w-[380px] flex flex-col gap-8">
-          {/* Pencapaian Target (New) */}
           <div className={`pro-card relative overflow-hidden bg-gradient-to-br from-white to-orange-50/30 flex flex-col ${!isAdmin ? 'h-full' : ''}`}>
             <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-1000">
               <Target size={180} />
@@ -270,7 +269,6 @@ export default function DashboardHome() {
               <h3 className="pro-label mb-4">Target Penjualan Bulanan</h3>
               <div className="flex flex-1 items-center justify-center py-8">
                 <div className="relative w-56 h-56">
-                  {/* Simple SVG Circular Progress */}
                   <svg className="w-full h-full transform -rotate-90 filter drop-shadow-sm">
                     <circle cx="112" cy="112" r="96" stroke="currentColor" strokeWidth="16" fill="transparent" className="text-slate-100" />
                     <circle
@@ -308,7 +306,6 @@ export default function DashboardHome() {
             </div>
           </div>
 
-          {/* Performa Cabang (Hanya Admin) */}
           {isAdmin && (
             <div className="pro-card flex-1">
               <h2 className="text-xl font-black text-text-primary flex items-center gap-3 mb-8">
