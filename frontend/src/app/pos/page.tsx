@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Search, Plus, Minus, Trash2, LogOut, ShoppingCart, Receipt, Store, Users, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search, Plus, Minus, Trash2, LogOut, ShoppingCart, Receipt, Store, Users, ChevronDown, QrCode, Banknote, CheckCircle2, Clock, ExternalLink, ShieldCheck, RefreshCw, Copy, Check } from 'lucide-react';
 import Image from 'next/image';
 
 interface Product {
@@ -45,8 +45,17 @@ export default function PosPage() {
   const [profileOpen, setProfileOpen] = useState<boolean>(false);
 
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<string>('Cash');
+  const [paymentMethod, setPaymentMethod] = useState<string>('Tunai');
   const [cashInput, setCashInput] = useState<number>(0);
+  
+  // Midtrans Sandbox QRIS state
+  const [isMidtransModalOpen, setIsMidtransModalOpen] = useState(false);
+  const [midtransOrderId, setMidtransOrderId] = useState('');
+  const [midtransStatus, setMidtransStatus] = useState<'pending' | 'settlement' | 'expire'>('pending');
+  const [midtransTimer, setMidtransTimer] = useState(300);
+  const [isSimulatingSuccess, setIsSimulatingSuccess] = useState(false);
+  const [copiedPayload, setCopiedPayload] = useState(false);
+
   // Receipt state
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<{ items: CartItem[]; total: number; date: string; id: string; paymentMethod: string } | null>(null);
@@ -91,6 +100,50 @@ export default function PosPage() {
     const sm = localStorage.getItem('pos_stock_map');
     if (sm) setStockMap(JSON.parse(sm));
   }, [router]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isMidtransModalOpen && midtransStatus === 'pending' && midtransTimer > 0) {
+      interval = setInterval(() => {
+        setMidtransTimer((prev) => {
+          if (prev <= 1) {
+            setMidtransStatus('expire');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isMidtransModalOpen, midtransStatus, midtransTimer]);
+
+  const handleStartMidtransQris = () => {
+    const orderId = `MID-POS-${Date.now().toString().slice(-8)}`;
+    setMidtransOrderId(orderId);
+    setMidtransStatus('pending');
+    setMidtransTimer(300);
+    setIsPayModalOpen(false);
+    setIsMidtransModalOpen(true);
+  };
+
+  const handleSimulateMidtransSuccess = () => {
+    setIsSimulatingSuccess(true);
+    setTimeout(() => {
+      setMidtransStatus('settlement');
+      setIsSimulatingSuccess(false);
+
+      setTimeout(() => {
+        setIsMidtransModalOpen(false);
+        handleConfirmPayment('QRIS');
+      }, 1200);
+    }, 800);
+  };
+
+  const formatTimer = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('pos_role');
@@ -161,10 +214,11 @@ export default function PosPage() {
     setIsPayModalOpen(true);
   };
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = (overrideMethod?: string) => {
+    const activeMethod = overrideMethod || paymentMethod;
     const transactionId = `TRX-${Date.now().toString().slice(-6)}`;
     const transactionDate = new Date().toLocaleString('id-ID');
-    setLastTransaction({ id: transactionId, date: transactionDate, items: [...cart], total, paymentMethod });
+    setLastTransaction({ id: transactionId, date: transactionDate, items: [...cart], total, paymentMethod: activeMethod });
 
     // 2. Update stock in localStorage
     const currentProducts: Product[] = JSON.parse(localStorage.getItem('pos_products') || '[]');
@@ -205,7 +259,7 @@ export default function PosPage() {
       total: total,
       cashier: userName,
       location: selectedLocation?.name || (userRole === 'ADMIN' ? 'Pusat' : 'Cabang Depok'),
-      paymentMethod: paymentMethod,
+      paymentMethod: activeMethod,
       timestamp: Date.now(),
     };
 
@@ -516,52 +570,361 @@ export default function PosPage() {
 
       {/* ===== PAYMENT MODAL ===== */}
       {isPayModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-scale-in overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100">
-              <h2 className="section-title">Pilih Metode Pembayaran</h2>
-              <p className="text-xs text-text-muted mt-1">
-                Total: <span className="font-bold text-primary">Rp {Math.round(total).toLocaleString('id-ID')}</span>
-              </p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-[460px] animate-scale-in overflow-hidden border border-slate-100">
+            {/* Header */}
+            <div className="px-7 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-orange-50/20 to-slate-50 flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-black text-slate-900 tracking-tight">Pilih Metode Pembayaran</h2>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Total Tagihan: <span className="font-extrabold text-primary text-sm ml-1">Rp {Math.round(total).toLocaleString('id-ID')}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setIsPayModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer text-xs font-bold"
+              >
+                ✕
+              </button>
             </div>
-            <div className="p-6 space-y-4">
-              {/* Payment method buttons */}
-              <div className="grid grid-cols-3 gap-2">
-                {['Cash', 'QRIS', 'Transfer', 'Debit', 'Kredit'].map((method) => (
+
+            <div className="p-7 space-y-6">
+              {/* Payment Method Tabs */}
+              <div className="grid grid-cols-2 gap-3.5">
+                {[
+                  { id: 'Tunai', label: 'Tunai (Cash)', desc: 'Uang Fisik', icon: Banknote },
+                  { id: 'QRIS', label: 'QRIS Midtrans', desc: 'E-Wallet / Qris', icon: QrCode },
+                ].map((item) => (
                   <button
-                    key={method}
-                    onClick={() => setPaymentMethod(method)}
-                    className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
-                      paymentMethod === method ? 'border-primary bg-primary text-white shadow-md shadow-primary/25' : 'border-slate-200 bg-white text-text-secondary hover:border-primary/40 hover:text-primary'
+                    key={item.id}
+                    onClick={() => setPaymentMethod(item.id)}
+                    className={`p-4 rounded-2xl text-left border-2 transition-all duration-200 flex flex-col justify-between cursor-pointer relative overflow-hidden ${
+                      paymentMethod === item.id
+                        ? 'border-primary bg-orange-50/40 shadow-md shadow-primary/10 scale-[1.02]'
+                        : 'border-slate-200/80 bg-white hover:border-slate-300 hover:bg-slate-50/50'
                     }`}
                   >
-                    {method}
+                    <div className="flex justify-between items-start mb-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                        paymentMethod === item.id ? 'bg-primary text-white shadow-md shadow-primary/30' : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        <item.icon size={22} />
+                      </div>
+                      {paymentMethod === item.id && (
+                        <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center shadow-sm">
+                          <Check size={12} strokeWidth={3} />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className={`text-sm font-extrabold ${paymentMethod === item.id ? 'text-primary' : 'text-slate-800'}`}>{item.label}</p>
+                      <p className="text-[11px] text-slate-400 font-medium">{item.desc}</p>
+                    </div>
                   </button>
                 ))}
               </div>
 
-              {/* Cash input */}
-              {paymentMethod === 'Cash' && (
-                <div className="pt-2">
-                  <label className="block text-sm font-medium text-text-primary mb-2">Uang Diterima (Rp)</label>
-                  <input type="number" value={cashInput} min={Math.round(total)} onChange={(e) => setCashInput(Number(e.target.value))} className="pro-input text-lg font-bold text-right" />
-                  {cashInput >= total && (
-                    <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex justify-between items-center">
-                      <span className="text-sm text-emerald-700 font-medium">Kembalian</span>
-                      <span className="text-base font-bold text-emerald-700">Rp {Math.round(cashInput - total).toLocaleString('id-ID')}</span>
+              {/* Cash input for Tunai */}
+              {paymentMethod === 'Tunai' && (
+                <div className="pt-1 space-y-4 animate-fade-in">
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Uang Diterima (Rp)</label>
+                      {cashInput > 0 && (
+                        <button onClick={() => setCashInput(0)} className="text-[11px] font-bold text-primary hover:underline cursor-pointer">
+                          Reset
+                        </button>
+                      )}
                     </div>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg">Rp</span>
+                      <input
+                        type="number"
+                        value={cashInput || ''}
+                        min={Math.round(total)}
+                        onChange={(e) => setCashInput(Number(e.target.value))}
+                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-xl font-black text-right tracking-tight text-slate-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Dynamic Smart Cash Presets */}
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pilihan Nominal Cepat</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      <button
+                        onClick={() => setCashInput(Math.round(total))}
+                        className={`py-2.5 px-2 text-xs font-extrabold rounded-xl border transition-all cursor-pointer ${
+                          cashInput === Math.round(total)
+                            ? 'bg-primary text-white border-primary shadow-sm'
+                            : 'bg-slate-100/80 hover:bg-primary/10 hover:text-primary text-slate-700 border-slate-200'
+                        }`}
+                      >
+                        Uang Pas
+                      </button>
+                      {Array.from(new Set([
+                        Math.ceil(total / 10000) * 10000,
+                        Math.ceil(total / 50000) * 50000,
+                        100000,
+                      ]))
+                        .filter((amt) => amt >= total)
+                        .slice(0, 3)
+                        .map((amt) => (
+                          <button
+                            key={amt}
+                            onClick={() => setCashInput(amt)}
+                            className={`py-2.5 px-2 text-xs font-extrabold rounded-xl border transition-all cursor-pointer ${
+                              cashInput === amt
+                                ? 'bg-primary text-white border-primary shadow-sm'
+                                : 'bg-slate-100/80 hover:bg-primary/10 hover:text-primary text-slate-700 border-slate-200'
+                            }`}
+                          >
+                            Rp {(amt / 1000).toFixed(0)}k
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+
+                  {cashInput >= total ? (
+                    <div className="p-4 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl flex justify-between items-center animate-fade-in shadow-sm">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                          <Banknote size={20} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-emerald-800 font-extrabold uppercase tracking-wider">Kembalian</p>
+                          <p className="text-xs text-emerald-600 font-medium">Uang tunai pelanggan lebih</p>
+                        </div>
+                      </div>
+                      <span className="text-xl font-black text-emerald-700">Rp {Math.round(cashInput - total).toLocaleString('id-ID')}</span>
+                    </div>
+                  ) : (
+                    cashInput > 0 && (
+                      <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-center text-xs text-rose-600 font-bold flex items-center justify-center gap-1.5">
+                        <span>⚠️ Uang kurang Rp {Math.round(total - cashInput).toLocaleString('id-ID')}</span>
+                      </div>
+                    )
                   )}
                 </div>
               )}
 
-              <div className="flex gap-3 pt-2 border-t border-slate-100">
-                <button onClick={() => setIsPayModalOpen(false)} className="pro-button-secondary flex-1">
+              {/* QRIS Midtrans notice */}
+              {paymentMethod === 'QRIS' && (
+                <div className="p-5 bg-gradient-to-br from-orange-50/60 via-amber-50/40 to-blue-50/40 border border-orange-100/80 rounded-2xl text-center space-y-3 animate-fade-in">
+                  <div className="w-12 h-12 rounded-2xl bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center mx-auto">
+                    <QrCode size={24} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">Midtrans QRIS Sandbox Gateway</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed mt-1 font-medium">
+                      Sistem akan membuat QR Code QRIS dinamis berstandar Midtrans Sandbox secara real-time.
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/90 rounded-full text-[10px] font-mono font-bold text-slate-700 border border-slate-200 shadow-sm">
+                    <ShieldCheck size={12} className="text-primary" />
+                    <span>Dukungan GoPay, OVO, Dana, LinkAja & Bank BCA/Mandiri</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Modal Buttons */}
+              <div className="flex gap-3 pt-3 border-t border-slate-100">
+                <button onClick={() => setIsPayModalOpen(false)} className="pro-button-secondary flex-1 py-3.5 text-sm font-bold cursor-pointer">
                   Batal
                 </button>
-                <button onClick={handleConfirmPayment} disabled={paymentMethod === 'Cash' && cashInput < total} className="pro-button-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
-                  Konfirmasi Bayar
+                {paymentMethod === 'Tunai' ? (
+                  <button
+                    onClick={() => handleConfirmPayment('Tunai')}
+                    disabled={cashInput < total}
+                    className="pro-button-primary flex-1 py-3.5 text-sm font-extrabold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/25 cursor-pointer"
+                  >
+                    Konfirmasi Bayar
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleStartMidtransQris}
+                    className="pro-button-primary flex-1 py-3.5 text-sm font-extrabold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/25 text-white flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>Lanjut QRIS Midtrans</span>
+                    <ArrowRight size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== MIDTRANS SANDBOX QRIS SIMULATOR MODAL ===== */}
+      {isMidtransModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 text-slate-900 w-full max-w-[460px] animate-scale-in overflow-hidden flex flex-col relative my-6">
+            {/* Header - Solid & Clean Design */}
+            <div className="px-7 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-orange-50/20 to-slate-50 flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-black text-slate-900 tracking-tight">QRIS Midtrans</h2>
+                <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                  Order ID: <span className="font-extrabold text-slate-900 ml-1">{midtransOrderId}</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-950 bg-amber-400 px-3 py-1.5 rounded-xl border border-amber-500 shadow-sm">
+                  <Clock size={13} className="text-slate-950" />
+                  <span className="font-mono">{formatTimer(midtransTimer)}</span>
+                </div>
+                <button
+                  onClick={() => setIsMidtransModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer text-xs font-bold"
+                >
+                  ✕
                 </button>
               </div>
+            </div>
+
+            {/* Content Body - Identical p-7 padding & space-y-5 */}
+            <div className="p-7 space-y-5">
+              {/* Authentic QRIS Card Display */}
+              <div className="bg-white rounded-2xl p-6 text-slate-900 shadow-md border border-slate-200/80 text-center space-y-4 relative overflow-hidden">
+                {/* QRIS Top Banner */}
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-xl tracking-tighter text-red-600 italic">QRIS</span>
+                    <span className="text-[10px] text-slate-400 font-sans leading-none text-left font-bold border-l border-slate-200 pl-2">
+                      National<br />Standard
+                    </span>
+                  </div>
+                  <span className="text-xs font-black tracking-widest bg-slate-900 px-2.5 py-1 rounded-lg text-white">GPN</span>
+                </div>
+
+                <div className="py-1">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">ZEN POS STORE</p>
+                  <p className="text-3xl font-black text-slate-900 tracking-tight mt-0.5">Rp {Math.round(total).toLocaleString('id-ID')}</p>
+                </div>
+
+                {/* QR Code Graphic */}
+                <div className="relative w-52 h-52 mx-auto bg-white p-2.5 rounded-2xl border-2 border-slate-100 shadow-inner flex items-center justify-center">
+                  <svg className="w-full h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Position Detection Patterns */}
+                    <rect x="5" y="5" width="25" height="25" fill="#0f172a" rx="3" />
+                    <rect x="9" y="9" width="17" height="17" fill="white" rx="2" />
+                    <rect x="13" y="13" width="9" height="9" fill="#0f172a" rx="1.5" />
+
+                    <rect x="70" y="5" width="25" height="25" fill="#0f172a" rx="3" />
+                    <rect x="74" y="9" width="17" height="17" fill="white" rx="2" />
+                    <rect x="78" y="13" width="9" height="9" fill="#0f172a" rx="1.5" />
+
+                    <rect x="5" y="70" width="25" height="25" fill="#0f172a" rx="3" />
+                    <rect x="9" y="74" width="17" height="17" fill="white" rx="2" />
+                    <rect x="13" y="78" width="9" height="9" fill="#0f172a" rx="1.5" />
+
+                    {/* Simulated Data Modules */}
+                    <path fillRule="evenodd" clipRule="evenodd" d="M35 5h5v5h-5V5zm10 0h15v5H45V5zm20 0h5v5h-5V5zM35 15h10v5H35v-5zm15 0h10v5H50v-5zm0 10h5v5h-5v-5zm10 0h5v5h-5v-5zM5 35h5v10H5V35zm10 0h5v5h-5v-5zm10 0h10v5H25v-5zm15 0h5v15h-5V35zm10 0h15v5H50v-5zm20 0h10v5H70v-5zm15 0h10v10H85V35zM5 50h10v5H5v-5zm20 0h5v10H25V50zm15 0h10v5H40v-5zm15 0h10v10H55V50zm20 0h10v5H75v-5zm10 0h10v5H85v-5zM5 60h5v5H5v-5zm15 0h5v5h-5v-5zm15 0h5v5h-5v-5zm15 0h10v5H50v-5zm20 0h5v5h-5v-5zm10 0h10v5H80v-5zM35 70h5v5h-5v-5zm10 0h10v5H45v-5zm20 0h10v10H65V70zm15 0h10v5H80v-5zM35 80h10v5H35v-5zm15 0h5v15h-5V80zm20 0h10v5H70v-5zm15 0h5v5h-5v-5zM35 90h5v5h-5v-5zm15 0h5v5h-5v-5zm20 0h15v5H70v-5z" fill="#0f172a" />
+                  </svg>
+
+                  {/* Center Midtrans Logo Watermark */}
+                  <div className="absolute inset-0 m-auto w-11 h-11 bg-white rounded-xl shadow-lg border border-slate-200 flex items-center justify-center p-1">
+                    <span className="font-black text-[11px] text-blue-600 tracking-tighter">midtrans</span>
+                  </div>
+
+                  {midtransStatus === 'settlement' && (
+                    <div className="absolute inset-0 bg-emerald-600 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center text-white animate-scale-in">
+                      <CheckCircle2 size={52} className="text-white mb-1.5 animate-bounce" />
+                      <span className="font-black text-base uppercase tracking-wider">SETTLEMENT</span>
+                      <span className="text-xs opacity-90 font-bold">Pembayaran Berhasil!</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 text-center text-[11px] text-slate-500 font-bold tracking-wide">
+                  <span>NMID: ID1020249857102</span>
+                </div>
+              </div>
+
+              {/* Status Indicator Banner - SOLID COLORS */}
+              <div className="text-center">
+                {midtransStatus === 'pending' && (
+                  <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 text-slate-950 text-xs font-black shadow-md border border-amber-500">
+                    <RefreshCw size={14} className="animate-spin text-slate-950" />
+                    <span>STATUS: PENDING (Menunggu Pembayaran)</span>
+                  </div>
+                )}
+                {midtransStatus === 'settlement' && (
+                  <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-black shadow-md">
+                    <CheckCircle2 size={15} />
+                    <span>STATUS: SETTLEMENT (Pembayaran Berhasil)</span>
+                  </div>
+                )}
+                {midtransStatus === 'expire' && (
+                  <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-black shadow-md">
+                    <span>STATUS: EXPIRED (Waktu Pembayaran Habis)</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Midtrans Sandbox Action Panel */}
+              <div className="bg-slate-100/90 p-4 rounded-2xl border border-slate-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck size={14} className="text-blue-600" />
+                    SIMULATOR MIDTRANS
+                  </span>
+                  <span className="text-[10px] font-black px-2.5 py-1 rounded-md bg-slate-900 text-white tracking-wider uppercase">
+                    TESTING MODE
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <button
+                    onClick={handleSimulateMidtransSuccess}
+                    disabled={midtransStatus !== 'pending' || isSimulatingSuccess}
+                    className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 active:scale-[0.98]"
+                  >
+                    {isSimulatingSuccess ? (
+                      <>
+                        <RefreshCw size={15} className="animate-spin" />
+                        <span>Mengirim Webhook Midtrans...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 size={16} />
+                        <span>Simulasikan Pembayaran Sukses (Webhook)</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => window.open('https://simulator.sandbox.midtrans.com/qris/index', '_blank')}
+                      className="py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs rounded-xl border border-slate-300 shadow-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <ExternalLink size={13} />
+                      <span>Midtrans Simulator</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const payload = `00020101021226680016ID.CO.QRIS.WWW01189360091800000000000215ID10202498571020303UME51440014ID.MIDTRANS.WWW0215${midtransOrderId}5204581253033605802ID5913ZEN POS STORE6007JAKARTA61051211062070703A016304`;
+                        navigator.clipboard.writeText(payload);
+                        setCopiedPayload(true);
+                        setTimeout(() => setCopiedPayload(false), 2000);
+                      }}
+                      className="py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs rounded-xl border border-slate-300 shadow-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      {copiedPayload ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                      <span>{copiedPayload ? 'Tersalin!' : 'Copy Payload'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Button - Matching pro-button-secondary style */}
+              <button
+                onClick={() => setIsMidtransModalOpen(false)}
+                className="pro-button-secondary w-full py-3.5 text-sm font-bold cursor-pointer"
+              >
+                Batalkan & Kembali ke POS
+              </button>
             </div>
           </div>
         </div>
@@ -616,7 +979,7 @@ export default function PosPage() {
                 </div>
                 <div className="flex justify-between text-xs font-mono pt-1 text-slate-500 uppercase">
                   <span>Metode Bayar</span>
-                  <span>{paymentMethod}</span>
+                  <span className="font-bold text-slate-800">{lastTransaction.paymentMethod}</span>
                 </div>
               </div>
 
@@ -640,6 +1003,7 @@ export default function PosPage() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

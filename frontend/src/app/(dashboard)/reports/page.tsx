@@ -17,6 +17,7 @@ interface PayMethod {
 }
 
 const METHOD_COLORS: Record<string, string> = {
+  Tunai: 'bg-emerald-500',
   Cash: 'bg-emerald-500',
   QRIS: 'bg-indigo-500',
   Transfer: 'bg-amber-500',

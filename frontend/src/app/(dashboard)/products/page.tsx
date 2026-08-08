@@ -322,7 +322,7 @@ export default function ProductsPage() {
                         {prod.stock}
                       </span>
                       {prod.stock <= (prod.minStock ?? 10) && (
-                        <AlertTriangle size={16} className="text-amber-500" title="Stok Menipis (Low)" />
+                        <span title="Stok Menipis (Low)"><AlertTriangle size={16} className="text-amber-500" /></span>
                       )}
                     </div>
                   </td>

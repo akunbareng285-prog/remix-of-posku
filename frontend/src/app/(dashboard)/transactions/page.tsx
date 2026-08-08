@@ -11,6 +11,7 @@ interface Transaction {
 }
 
 const methodColors: Record<string, string> = {
+  'Tunai': 'pro-badge-success',
   'Cash': 'pro-badge-success',
   'QRIS': 'pro-badge-info',
   'Transfer': 'pro-badge-warning',
