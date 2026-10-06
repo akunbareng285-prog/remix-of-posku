@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #111827;
+  --color-card: #ffffff;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: #6b7280;
+  --color-border: #111827;
+  --color-primary: #5644ff;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #ff3366;
+  --color-accent-foreground: #ffffff;
+  --color-warning: #ffc107;
+  --color-warning-foreground: #111827;
+  --color-success: #10b981;
+  --color-success-foreground: #ffffff;
+  --color-sidebar: #111827;
+  --color-sidebar-foreground: #ffffff;
+  --color-input: #111827;
+
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo Black", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-brutal: 4px 4px 0 0 #111827;
+  --shadow-brutal-sm: 2px 2px 0 0 #111827;
+  --shadow-brutal-lg: 6px 6px 0 0 #111827;
+
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+@utility brutal-card {
+  background-color: var(--color-card);
+  border-width: 3px;
+  border-color: var(--color-border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-brutal);
+}
